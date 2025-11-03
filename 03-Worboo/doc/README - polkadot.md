@@ -114,6 +114,7 @@ Optional extras (stretch goals):
 - [`polkadot-target.md`](polkadot-target.md): rationale for choosing Moonbase/Moonbeam.
 - [`implementation-plan.md`](implementation-plan.md): milestone tracker and future tasks.
 - [`deployment-guide.md`](deployment-guide.md): step-by-step setup for contracts, frontend, and relayer.
+- [`deployment-guide.zh-CN.md`](deployment-guide.zh-CN.md): 中文部署指南，适用于本地演示与黑客松提交。
 - [`demo-playbook.md`](demo-playbook.md): live presentation script.
 - [`roadmap-next.md`](roadmap-next.md): post-hackathon backlog.
 - [`handoff.md`](handoff.md): current gaps and guidance for future contributors.
@@ -133,6 +134,7 @@ Optional extras (stretch goals):
 ---
 
 Ready to jam on Polkadot 🌐🔤🟩? Ping the maintainers or open a GitHub issue if you need help reproducing results during judging.
+
 
 
 

@@ -278,6 +278,7 @@ Short term goals are tracked in [`doc/implementation-plan.md`](doc/implementatio
 
 - [Polkadot Hackathon README](doc/README%20-%20polkadot.md)
 - [Deployment Guide](doc/deployment-guide.md)
+- [部署指南（中文）](doc/deployment-guide.zh-CN.md)
 - [Demo Playbook](doc/demo-playbook.md)
 - [Post-MVP Roadmap](doc/roadmap-next.md)
 - [Testing Matrix & Coverage Checklist](doc/testing-matrix.md)
@@ -290,6 +291,7 @@ Short term goals are tracked in [`doc/implementation-plan.md`](doc/implementatio
 ---
 
 Made with 🟩🟨⬛ by the Worboo team for the Dot Your Future hackathon.
+
 
 
 

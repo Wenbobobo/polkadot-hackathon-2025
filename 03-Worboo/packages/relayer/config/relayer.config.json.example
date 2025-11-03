@@ -14,5 +14,5 @@
   "healthPort": 8787,
   "logFilePath": ".logs/worboo-relayer.log",
   "logMaxBytes": 5242880,
-  "logBackupCount": 5
-}
+  "logBackupCount": 5,\n  "logHttpEndpoint": "https://logs.example/ship"\n}
+
