@@ -74,6 +74,7 @@ describe('loadConfig', () => {
     expect(config.logFilePath).toBeUndefined();
     expect(config.logMaxBytes).toBe(5 * 1024 * 1024);
     expect(config.logBackupCount).toBe(5);
+    expect(config.logHttpEndpoint).toBeUndefined();
   });
 
   it('honours custom reward amounts', () => {
@@ -103,6 +104,7 @@ describe('loadConfig', () => {
     process.env.RELAYER_LOG_FILE = '/var/log/worboo.jsonl';
     process.env.RELAYER_LOG_MAX_BYTES = '1048576';
     process.env.RELAYER_LOG_BACKUPS = '7';
+    process.env.RELAYER_LOG_HTTP_ENDPOINT = 'https://logs.example/ship';
 
     const config = loadConfig();
     expect(config.maxRetries).toBe(5);
@@ -113,6 +115,7 @@ describe('loadConfig', () => {
     expect(config.healthPort).toBe(9999);
     expect(config.healthHost).toBe('127.0.0.1');
     expect(config.healthCorsOrigin).toBe('https://example.com');
+    expect(config.logHttpEndpoint).toBe('https://logs.example/ship');
     expect(config.logFilePath).toBe('/var/log/worboo.jsonl');
     expect(config.logMaxBytes).toBe(1_048_576);
     expect(config.logBackupCount).toBe(7);
@@ -136,6 +139,7 @@ describe('loadConfig', () => {
       logFilePath: 'C:/logs/relayer.log',
       logMaxBytes: 2048,
       logBackupCount: 2,
+      logHttpEndpoint: 'https://logs.file/hooks',
     })
 
     const config = loadConfig()
@@ -158,6 +162,7 @@ describe('loadConfig', () => {
     expect(config.logFilePath).toBe('C:/logs/relayer.log')
     expect(config.logMaxBytes).toBe(2048)
     expect(config.logBackupCount).toBe(2)
+    expect(config.logHttpEndpoint).toBe('https://logs.file/hooks')
   })
 
   it('prefers environment variables over file values', () => {
@@ -191,3 +196,6 @@ describe('loadConfig', () => {
     expect(config.healthCorsOrigin).toBeUndefined()
   })
 });
+
+
+
