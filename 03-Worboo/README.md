@@ -1,7 +1,9 @@
 # Worboo on Polkadot
 
-An on-chain, gameified Wordle experience for the **Dot Your Future** hackathon. Players solve daily word challenges in the browser, submit results to smart contracts running on **Moonbase Alpha (Polkadot’s EVM testnet)**, earn the `WBOO` reward token, and unlock cosmetic collectibles inside the Worboo shop.
+An on-chain, gameified Wordle experience for the **Dot Your Future** . Players solve daily word challenges in the browser, submit results to smart contracts running on **Moonbase Alpha (Polkadot’s EVM testnet)**, earn the `WBOO` reward token, and unlock cosmetic collectibles inside the Worboo shop.
 
+Demo:https://youtu.be/TZWbPpDmWnY
+Deck:https://docs.google.com/presentation/d/1dq1zbPAUIBkElUX6v38n0HDbQV_gGLSI/edit?usp=sharing&ouid=115326369798975944335&rtpof=true&sd=true
 ---
 
 ## Highlights
@@ -31,7 +33,7 @@ graph TD
     subgraph Relayer
         D[GameRecorded Listener]
         E[Metrics & Persistent Cache]
-        F[/healthz & status CLI]
+        F[healthz + status CLI]
         G[Structured Logger]
     end
 
@@ -47,9 +49,9 @@ graph TD
     C --> F
     D --> H
     D --> I
+    D --> E
     E --> F
     G --> F
-    D --> E
 
     H --> I
     I --> J
@@ -70,7 +72,9 @@ sequenceDiagram
     Relayer->>Token: mintTo(player)
     Token-->>Player: WBOO balance +
     Relayer-->>Frontend: /healthz queueDepth ↓
-```\n## Repository Map
+```
+
+## Repository Map
 
 | Path | Purpose |
 | --- | --- |
@@ -132,7 +136,15 @@ npm run test
 
 The test suite covers registration edge cases, streak logic, token permissions, and shop purchase flows.
 
-### 5. Deploy to Moonbase Alpha
+### 5. Gameplay Flow
+
+1. **Connect wallet** – open the React app and switch to Moonbase Alpha via RainbowKit.
+2. **Register on-chain** – click the banner button and confirm the `register()` transaction.
+3. **Play Worboo** – solve the daily puzzle (or simulate success) to call `recordGame` and emit `GameRecorded` events.
+4. **Auto rewards** – the relayer mints WBOO, updates the navbar banner, and refreshes balances automatically.
+5. **Shop cosmetics** – spend WBOO in the Worboo Shop and verify inventory/balance updates instantly.
+6. **Monitor health** – run `npm run status` or call `/healthz` to show queue depth and relayer heartbeat.
+### 6. Deploy to Moonbase Alpha
 
 ```bash
 # from packages/contracts
@@ -142,7 +154,7 @@ npm run export:addresses
 
 Populate the frontend `.env` addresses with the resulting deployment output.
 
-### 6. Run the frontend
+### 7. Run the frontend
 
 ```bash
 cd react-wordle
@@ -151,7 +163,7 @@ npm start
 
 RainbowKit presents Moonbase Alpha by default. Connect a wallet, register on-chain, and start purchasing items with WBOO.
 
-### 7. (Optional) Start the reward relayer
+### 8. (Optional) Start the reward relayer
 
 Grant the `GAME_MASTER_ROLE` to the relayer wallet (so it can mint rewards):
 
@@ -289,18 +301,3 @@ Short term goals are tracked in [`doc/implementation-plan.md`](doc/implementatio
 - [RainbowKit](https://www.rainbowkit.com/) / [wagmi](https://wagmi.sh/) references.
 
 ---
-
-Made with 🟩🟨⬛ by the Worboo team for the Dot Your Future hackathon.
-
-
-
-
-
-
-
-
-
-
-
-
-

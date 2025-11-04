@@ -3,12 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "DISABLE_ESLINT_PLUGIN=true node scripts/build.js",
+    "build": "node scripts/build.js",
     "fix": "prettier --write src",
     "lint": "prettier --check src",
-    "start": "DISABLE_ESLINT_PLUGIN=true node scripts/start.js",
+    "start": "node scripts/start.js",
     "test": "node scripts/test.js",
-    "prepare": "husky install",
     "build:wasm": "cd ../circuits && wasm-pack build --target web --out-dir ../client/public/pkg"
   },
   "dependencies": {

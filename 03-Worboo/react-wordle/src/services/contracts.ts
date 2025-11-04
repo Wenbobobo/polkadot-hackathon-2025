@@ -22,7 +22,7 @@ type WorbooContracts = {
 
 const createContract = (
   address: `0x${string}` | undefined,
-  abi: readonly unknown[],
+  abi: any,
   signerOrProvider: any
 ) => {
   if (!address || !signerOrProvider) return null
@@ -52,19 +52,31 @@ export const useWorbooContracts = (): WorbooContracts => {
     const writeProvider = signer ?? readProvider
 
     return {
-      registry: createContract(config.registry, WORBOO_REGISTRY_ABI, readProvider),
+      registry: createContract(
+        config.registry,
+        WORBOO_REGISTRY_ABI,
+        readProvider
+      ),
       registryWrite: createContract(
         config.registry,
         WORBOO_REGISTRY_ABI,
         writeProvider
       ),
-      token: createContract(config.token, WORBOO_TOKEN_ABI, readProvider),
+      token: createContract(
+        config.token,
+        WORBOO_TOKEN_ABI,
+        readProvider
+      ),
       tokenWrite: createContract(
         config.token,
         WORBOO_TOKEN_ABI,
         writeProvider
       ),
-      shop: createContract(config.shop, WORBOO_SHOP_ABI, readProvider),
+      shop: createContract(
+        config.shop,
+        WORBOO_SHOP_ABI,
+        readProvider
+      ),
       shopWrite: createContract(
         config.shop,
         WORBOO_SHOP_ABI,
@@ -74,4 +86,3 @@ export const useWorbooContracts = (): WorbooContracts => {
     }
   }, [config, readProvider, signer])
 }
-

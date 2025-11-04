@@ -44,11 +44,14 @@ npm install --ignore-scripts --prefix react-wordle
    cp packages/contracts/.env.example packages/contracts/.env
    ```
 2. Fill the values:
-   ```ini
-   PRIVATE_KEY=0xYOUR_PRIVATE_KEY              # wallet used for deployment
-   MOONBASE_RPC=https://rpc.api.moonbase.moonbeam.network
-   MOONBEAM_RPC=https://rpc.api.moonbeam.network   # optional mainnet promotion
-   ```
+```ini
+PRIVATE_KEY=0xYOUR_PRIVATE_KEY              # wallet used for deployment
+MOONBASE_RPC=https://rpc.api.moonbase.moonbeam.network
+MOONBEAM_RPC=https://rpc.api.moonbeam.network   # optional mainnet promotion
+# Optional gas overrides (defaults to 1 gwei)
+MOONBASE_GAS_PRICE=1000000000
+MOONBEAM_GAS_PRICE=1000000000
+```
 3. (Optional) Add [`MNEMONIC`] instead of `PRIVATE_KEY` if you use a seed phrase—Hardhat will prefer `PRIVATE_KEY` when both exist.
 
 ---
@@ -73,6 +76,8 @@ npx hardhat ignition deploy ./ignition/modules/WorbooModule.ts --network moonbas
 ```
 
 This deploys the registry, token, and shop contracts, and wires base roles.
+
+> **遇到 “transactions dropped” 或重试部署**：请先删除 `packages/contracts/ignition/deployments/chain-1287` 目录，再执行部署命令。Moonbase 要求至少 1 gwei 的 `gasPrice`（已在配置文件中默认设置，可通过 `MOONBASE_GAS_PRICE` 覆盖）。
 
 ### 5.1 Export Addresses for the Frontend
 

@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { formatUnits } from 'ethers'
+import { utils } from 'ethers'
 
 import { useWorbooContracts } from '../services/contracts'
 import { getOnChainShopItems, getShopItemTokenId } from '../utils/shop'
@@ -33,7 +33,7 @@ type WorbooPlayerHook = {
   refresh: () => void
 }
 
-const ZERO_BALANCE = 0n
+const ZERO_BALANCE = BigInt(0)
 
 export const useWorbooPlayer = (address?: string): WorbooPlayerHook => {
   const queryClient = useQueryClient()
@@ -143,13 +143,19 @@ export const useWorbooPlayer = (address?: string): WorbooPlayerHook => {
     }
   )
 
-  const balance = balanceQuery.data ?? ZERO_BALANCE
-  const decimals = decimalsQuery.data ?? 18
+const balance = balanceQuery.data ?? ZERO_BALANCE
+const decimals = decimalsQuery.data ?? 18
 
-  const balanceFormatted = useMemo(
-    () => formatUnits(balance, decimals),
-    [balance, decimals]
-  )
+const balanceFormatted = useMemo(
+  () => {
+    try {
+      return utils.formatUnits(balance, decimals)
+    } catch {
+      return balance.toString()
+    }
+  },
+  [balance, decimals]
+)
 
   return {
     isReady: queriesEnabled,

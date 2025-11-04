@@ -1,33 +1,33 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-- `packages/contracts/` — Hardhat Solidity workspace with sources under `contracts/`, tests in `test/`, and Ignition modules in `ignition/`.
-- `packages/relayer/` — TypeScript event listener, health server, and tests in `tests/`. Deployment assets live in `Dockerfile` and `ecosystem.config.cjs`.
-- `react-wordle/` — CRA-based frontend (`src/`), with targeted tests in `src/hooks/__tests__/` and `src/components/**/__tests__`.
-- `doc/` — Hackathon collateral: deployment guide, demo playbook, roadmap, and handoff notes.
+- `packages/contracts/` hosts the Hardhat workspace; Solidity lives in `contracts/`, TypeScript tests under `test/`, and Ignition deployment modules in `ignition/`.
+- `packages/relayer/` contains the TypeScript event relayer with config stubs in `config/`, source code in `src/`, and Vitest suites in `tests/`.
+- `react-wordle/` is the CRA frontend; feature code is under `src/`, with hooks/components keeping colocated `__tests__` folders.
+- `doc/` centralizes hackathon collateral (migration research, deployment guide, roadmap, handoff). Treat it as the canonical brief for stakeholders.
 
 ## Build, Test, and Development Commands
-- `npm run lint` (root) — ESLint sweep of contracts and relayer packages.
-- `npm run test` (packages/contracts) — Hardhat unit tests + coverage-ready build.
-- `npm test` (packages/relayer) — Vitest suite covering config, handler, server, and integration flow.
-- `npm test -- --watch=false --testPathPattern="(shop|contracts|words|RelayerStatusBanner|useRelayerNotifications)"` (react-wordle) — Targeted frontend checks that avoid legacy CRA pitfalls.
-- Deployment helpers: `docker build -f packages/relayer/Dockerfile …` or `pm2 start packages/relayer/ecosystem.config.cjs`.
+- `npm run lint` (root) — ESLint across contracts and relayer.
+- `npm run test` (packages/contracts) — Hardhat unit tests plus TypeChain compilation.
+- `npm test` (packages/relayer) — Vitest unit + integration suite; ensure contracts workspace is compiled first.
+- `npm test -- --watch=false --testPathPattern="(shop|contracts|words|RelayerStatusBanner|useRelayerNotifications)"` (react-wordle) — Targeted CRA tests that avoid legacy runner pitfalls.
+- `npm start` (react-wordle) — Launches the Moonbase-enabled UI on port 3000; set `PORT=3100` if the default port is busy.
 
 ## Coding Style & Naming Conventions
-- Prettier (`.prettierrc.json`) governs formatting; run `npm run format` before large edits.
-- TypeScript/JavaScript lint rules live in `.eslintrc.cjs`; warnings for unused vars, React hooks, and accessibility are disabled only where legacy code demands it—prefer resolving root causes.
-- Adopt descriptive PascalCase for contracts, camelCase for functions/variables, and `Worboo*` prefixes for new on-chain artifacts.
+- Prettier (`npm run format`) enforces formatting; respect `.prettierrc.json` line width and trailing comma rules.
+- TypeScript/JavaScript linting uses `.eslintrc.cjs`; prefer resolving warnings rather than silencing them.
+- Solidity contracts follow PascalCase (`WorbooRegistry`), while functions/variables use camelCase. Prefix new on-chain artifacts with `Worboo`.
 
 ## Testing Guidelines
-- Contracts: Hardhat + chai; keep new specs under `packages/contracts/test/*.ts` and mirror filename to contract (e.g., `WorbooRegistry.ts`).
-- Relayer: Vitest; integration tests spin up Hardhat locally, so keep them lean and deterministic.
-- Frontend: React Testing Library; place hook/component tests beside implementation in `__tests__` folders.
-- Aim to preserve current coverage (≥97% statements for contracts); update `doc/testing-matrix.md` with notable deltas.
+- Contracts: Hardhat + chai; mirror test filenames to contracts (e.g., `WorbooRegistry.ts`). Keep coverage ≥97% statements (see `doc/testing-matrix.md`).
+- Relayer: Vitest with mocked Hardhat node; write deterministic tests that prove queue management and reward minting.
+- Frontend: React Testing Library; colocate specs beside components/hooks and mock Wagmi providers for chain interactions.
 
 ## Commit & Pull Request Guidelines
-- Use imperative, present-tense commit subjects (e.g., `Add relayer health CORS toggle`), grouping related changes per commit.
-- PRs should summarize intent, note test commands executed, and link relevant hackathon tasks/issues. Include screenshots or terminal logs when UX/ops behaviour changes.
+- Use imperative, present-tense commit headers (e.g., `Add relayer health probes`). Group related changes per commit.
+- PRs should recap intent, list commands executed (tests, lint, build), and link hackathon issues/tasks. Attach screenshots or logs for UX/ops changes.
 
 ## Security & Configuration Tips
-- Never commit `.env` or private keys; rely on JSON config (`packages/relayer/config/relayer.config.json`) plus `RELAYER_CONFIG_PATH`.
-- Grant `GAME_MASTER_ROLE` only to automation wallets and rotate RPC keys after demos.
+- Never commit secrets. Use `packages/relayer/config/relayer.config.json` with `RELAYER_CONFIG_PATH` overrides instead of raw env vars.
+- Grant `GAME_MASTER_ROLE` only to automation wallets operating the relayer. Rotate RPC keys after demos and keep Moonbase faucets in reserve.
+- Log files (`.logs/`) and caches (`.cache/`) may be generated; add them to `.gitignore` when creating new variants.

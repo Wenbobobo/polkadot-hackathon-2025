@@ -27,12 +27,16 @@ const config: HardhatUserConfig = {
     moonbase: {
       url: process.env.MOONBASE_RPC || "",
       chainId: 1287,
-      accounts: sharedAccounts
+      accounts: sharedAccounts,
+      gasPrice: Number(process.env.MOONBASE_GAS_PRICE || 1_000_000_000), // 1 Gwei 默认
+      gas: "auto"
     },
     moonbeam: {
       url: process.env.MOONBEAM_RPC || "",
       chainId: 1284,
-      accounts: sharedAccounts
+      accounts: sharedAccounts,
+      gasPrice: Number(process.env.MOONBEAM_GAS_PRICE || 1_000_000_000),
+      gas: "auto"
     }
   },
   paths: {

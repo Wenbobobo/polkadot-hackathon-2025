@@ -1,4 +1,4 @@
-import Countdown from 'react-countdown'
+import React, { useMemo, useState } from 'react'
 import { ShareIcon } from '@heroicons/react/outline'
 import { StatBar } from '../stats/StatBar'
 import { Histogram } from '../stats/Histogram'
@@ -14,7 +14,6 @@ import {
 } from '../../constants/strings'
 import { MigrationIntro } from '../stats/MigrationIntro'
 import { ENABLE_MIGRATE_STATS } from '../../constants/settings'
-import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 type Props = {
@@ -55,6 +54,10 @@ export const StatsModal = ({
 }: Props) => {
   const navigate = useNavigate()
   const [proveText, setProveText] = useState('Generate ZK proof!')
+  const nextUnlockLabel = useMemo(
+    () => getNextGameDate(getToday()).toLocaleString(),
+    []
+  )
   const doProving = async (
     solution: string,
     guesses: string[],
@@ -134,11 +137,9 @@ export const StatsModal = ({
           <div className="mt-5 sm:mt-6 dark:text-white">
             <div>
               <h5>{NEW_WORD_TEXT}</h5>
-              <Countdown
-                className="text-lg font-medium text-gray-900 dark:text-gray-100"
-                date={getNextGameDate(getToday()).valueOf()}
-                daysInHours={true}
-              />
+              <span className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                {nextUnlockLabel}
+              </span>
             </div>
           </div>
         </>

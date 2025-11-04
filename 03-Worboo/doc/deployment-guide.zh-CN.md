@@ -41,11 +41,13 @@ npm install --ignore-scripts --prefix react-wordle   # CRA 旧版钩子需禁用
    cp packages/contracts/.env.example packages/contracts/.env
    ```
 2. 编辑 `.env`：
-   ```ini
-   PRIVATE_KEY=0x部署钱包私钥
-   MOONBASE_RPC=https://rpc.api.moonbase.moonbeam.network
-   MOONBEAM_RPC=（可选，正式网备用）
-   ```
+```ini
+PRIVATE_KEY=0x部署钱包私钥
+MOONBASE_RPC=https://rpc.api.moonbase.moonbeam.network
+MOONBEAM_RPC=（可选，正式网备用）
+MOONBASE_GAS_PRICE=1000000000        # 可选，默认 1 GWei
+MOONBEAM_GAS_PRICE=1000000000
+```
 3. 编译与测试：
    ```powershell
    cd packages/contracts
@@ -53,10 +55,12 @@ npm install --ignore-scripts --prefix react-wordle   # CRA 旧版钩子需禁用
    npm run test
    ```
 4. Moonbase 部署：
-   ```powershell
-   npm run deploy:moonbase
-   npm run export:addresses   # 输出前端可直接粘贴的地址
-   ```
+```powershell
+npm run deploy:moonbase
+npm run export:addresses   # 输出前端可直接粘贴的地址
+```
+
+> 若部署过程中出现 “transactions dropped” 或 RPC 模块错误，请先删除 `packages/contracts/ignition/deployments/chain-1287` 后重试。Moonbase 默认要求至少 1 GWei 的 gasPrice（已在 `hardhat.config.ts` 中设为 1 GWei，可通过 `MOONBASE_GAS_PRICE` 自定义）。
 
 ---
 
