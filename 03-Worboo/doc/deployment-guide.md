@@ -108,6 +108,11 @@ REACT_APP_WORBOO_SHOP=0x...
    REACT_APP_WORBOO_SHOP=0x...
    REACT_APP_RELAYER_HEALTH_URL=http://localhost:8787/healthz
    ```
+3. Review optional feature toggles in `react-wordle/src/config/appConfig.ts`:
+   - Leave `shopDemoMode` as `true` if you are demoing without on-chain balances (purchases will be simulated).
+   - Keep `zkProofsEnabled=false` until the Halo2 proving pipeline is restored—the stats modal will display a “coming soon” notice.
+   - To integrate a custom AI hint service, set `aiAssistant.enabled=true` and provide your `baseUrl`, `model`, and prompt templates (use `{word}` placeholder for the solution).
+   - The toggles above can also be set directly in `.env.local` using keys like `REACT_APP_SHOP_DEMO_MODE`, `REACT_APP_ZK_PROOFS_ENABLED`, and `REACT_APP_ASSISTANT_*`.
 3. Start the app:
    ```bash
    cd react-wordle
@@ -225,6 +230,8 @@ PM2 will keep the service alive and restart on crashes. Use `pm2 restart worboo-
 - Connect the same wallet in the UI.
 - After registering and winning a puzzle, refresh the shop modal—balance should update once the relayer transaction confirms.
 - The navbar now surfaces relayer status: pending wins trigger a banner, and successful mints show `Relayer minted +X WBOO` once the relayer processes the event.
+- Open the profile sidebar to confirm the generated Polka ID, wallet summary, activity heatmap, and badge gallery render correctly.
+- Complete a word and verify the stats modal: daily progress updates, share CTA copies to clipboard, “Review word details” opens the glossary modal, and “Play next Worboo word” advances without duplicate popups.
 - For manual mint testing, call `mintTo` via Hardhat console:
   ```bash
   npx hardhat console --network moonbase
@@ -242,8 +249,9 @@ PM2 will keep the service alive and restart on crashes. Use `pm2 restart worboo-
 | Contracts | `npm run test` (inside `packages/contracts`) |
 | Contracts – coverage | `REPORT_GAS=false npm run coverage` |
 | Contracts – gas report | `REPORT_GAS=true npm run gas` |
+| Contracts – coverage + gas evidence | `npm run report:evidence` (inside `packages/contracts`) |
 | Relayer config | `npm run test` (inside `packages/relayer`) |
-| Frontend targeted suite | `npm test -- --watch=false --testPathPattern="(shop|contracts|words|RelayerStatusBanner|useRelayerNotifications)"` |
+| Frontend targeted suite | `npm test -- --watch=false --testPathPattern="(shop|contracts|words|RelayerStatusBanner|useRelayerNotifications|useWorbooAssistant)"` |
 
 ---
 

@@ -4,6 +4,7 @@
 - **Auto mint relayer**: persistence, retry/backoff, reward banner, CLI health snapshot, Dockerfile, and PM2 profile shipped; next add structured log aggregation and cache rotation.
 - **Indexer integration**: placeholder scaffold lives in `packages/indexer/`; next bootstrap Subsquid/SubQuery project and expose leaderboard APIs with streak and completion stats.
 - **UI telemetry**: instrument React Query cache misses, wallet connection failures, and purchase errors for better observability during mainnet launch.
+- **AI assistant backend**: `useWorbooAssistant` is ready—provide a hosted hint API, wire authentication, and monitor response quality.
 
 ## Phase 2 – Trustless Proof-of-Play
 - Reintroduce the Halo2 WASM proof flow by shipping an off-chain worker that validates proofs and writes IPFS hashes on-chain.

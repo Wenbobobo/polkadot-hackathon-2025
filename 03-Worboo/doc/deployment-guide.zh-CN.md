@@ -73,6 +73,7 @@ npm run export:addresses   # 输出前端可直接粘贴的地址
    REACT_APP_WORBOO_SHOP=0x...
    REACT_APP_RELAYER_HEALTH_URL=http://localhost:8787/healthz   # 本地 relayer 健康检查，可留空
    ```
+2. 可选：在 `react-wordle/src/config/appConfig.ts` 中调整高级开关（如 `shopDemoMode`、`zkProofsEnabled`、`aiAssistant`），用于切换演示模式、关闭/开启 Halo2 证明提示或对接自建 LLM 提示服务（prompt 可使用 `{word}` 占位符）。若希望无需改动代码，也可在 `.env.local` 中配置 `REACT_APP_SHOP_DEMO_MODE`、`REACT_APP_ZK_PROOFS_ENABLED`、`REACT_APP_ASSISTANT_*` 等变量覆盖默认值。
 2. 启动前端：
    ```powershell
    cd react-wordle
@@ -155,7 +156,7 @@ pm2 status
 2. `npm run test`（packages/contracts）
 3. `npm test`（packages/relayer）
 4. `npm run status` 确认 `queueDepth: 0`
-5. 浏览器连接前端，完成注册、答题、奖励发放与商店购买流程
+5. 浏览器连接前端，完成注册、答题、奖励发放与商店购买流程：确认黄色注册条在网络错误时保留提示、Polka ID 侧边栏展示热力图与徽章、统计弹窗出现“查看单词 / 下一题”按钮并提示 ZK 即将回归。
 6. 若计划录制演示，请参考 `doc/demo-playbook.md` 的录像清单
 
 ---

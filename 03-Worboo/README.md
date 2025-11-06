@@ -15,6 +15,7 @@ Deck:https://docs.google.com/presentation/d/1dq1zbPAUIBkElUX6v38n0HDbQV_gGLSI/ed
   - `WorbooRegistry`: tracks player registration, daily submissions, streaks.
   - `WorbooToken`: ERC‑20 reward currency with role-gated mint/burn.
   - `WorbooShop`: ERC‑1155 collectibles redeemed with WBOO.
+- **Polkadot-ready UX**: Profile sidebars derive deterministic Polka IDs from wallets, show activity heatmaps, badges, and Moonbase-themed friends with shareable IDs.
 - **TDD first**: Hardhat/Jest specs accompany every contract and service; see the [implementation plan](doc/implementation-plan.md).
 - **Hackathon ready docs**: Technical roadmap, deployment notes, and Polkadot background inside `doc/`.
 
@@ -126,12 +127,32 @@ REACT_APP_RELAYER_HEALTH_URL=http://localhost:8787/healthz
 
 > If `REACT_APP_RELAYER_HEALTH_URL` is omitted, the frontend defaults to `/healthz` on the same origin, so local dev can rely on the health server port defined above.
 
+Optional feature toggles live in `react-wordle/src/config/appConfig.ts`:
+
+- `shopDemoMode`: keep `true` for offline demos that simulate purchases without on-chain balance.
+- `zkProofsEnabled`: flip to `true` once the Halo2 proving pipeline is back online (the stats modal currently shows a “coming soon” notice).
+- `aiAssistant`: wire `enabled`, `baseUrl`, and `model` to integrate your own LLM-powered hint endpoint. Prompts support a `{word}` token for dynamic hints.
+
+> Tip: all of the toggles above can be overwritten via env vars in `.env.local`:
+> `REACT_APP_SHOP_DEMO_MODE`, `REACT_APP_ZK_PROOFS_ENABLED`, `REACT_APP_ASSISTANT_ENABLED`, `REACT_APP_ASSISTANT_URL`, `REACT_APP_ASSISTANT_MODEL`, `REACT_APP_ASSISTANT_PROMPT_FIRST`, `REACT_APP_ASSISTANT_PROMPT_RETRY`.
+
+Need a quick demo backend? Run the bundled mock server:
+
+```bash
+cd react-wordle
+npm run mock:assistant -- --port 8788 --delay 50
+```
+
+Then set `REACT_APP_ASSISTANT_ENABLED=true` and `REACT_APP_ASSISTANT_URL=http://127.0.0.1:8788`.
+
 ### 4. Compile & test contracts
 
 ```bash
 cd packages/contracts
 npm run compile
 npm run test
+# Generate coverage + gas evidence (LCOV + gas-report.txt)
+npm run report:evidence
 ```
 
 The test suite covers registration edge cases, streak logic, token permissions, and shop purchase flows.
@@ -139,11 +160,12 @@ The test suite covers registration edge cases, streak logic, token permissions, 
 ### 5. Gameplay Flow
 
 1. **Connect wallet** – open the React app and switch to Moonbase Alpha via RainbowKit.
-2. **Register on-chain** – click the banner button and confirm the `register()` transaction.
+2. **Register on-chain** – click the banner button and confirm the `register()` transaction (the prompt stays visible if contracts are missing or you’re on the wrong network).
 3. **Play Worboo** – solve the daily puzzle (or simulate success) to call `recordGame` and emit `GameRecorded` events.
-4. **Auto rewards** – the relayer mints WBOO, updates the navbar banner, and refreshes balances automatically.
-5. **Shop cosmetics** – spend WBOO in the Worboo Shop and verify inventory/balance updates instantly.
-6. **Monitor health** – run `npm run status` or call `/healthz` to show queue depth and relayer heartbeat.
+4. **Auto rewards** – the relayer mints WBOO, updates the navbar health banner, and refreshes balances automatically.
+5. **Shop & profile** – browse the Worboo Shop, unlock cosmetics (demo mode or real balance), and view deterministic Polka IDs, badges, and activity heatmaps in the sidebar/friend cards.
+6. **Review stats** – after each word the updated stats modal shows daily progress, share/copy controls, “review word” and “next word” CTA, and highlights that ZK proofs are coming back soon.
+7. **Monitor health** – run `npm run status` or call `/healthz` to show queue depth and relayer heartbeat.
 ### 6. Deploy to Moonbase Alpha
 
 ```bash
