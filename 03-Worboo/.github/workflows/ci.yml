@@ -6,6 +6,11 @@ on:
       - main
   pull_request:
 
+env:
+  CI: true
+  HUSKY: 0
+  HUSKY_SKIP_INSTALL: 1
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -20,7 +25,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: HUSKY=0 npm install --ignore-scripts
+        run: npm ci --ignore-scripts
 
       - name: Lint (contracts + relayer)
         run: npm run lint
@@ -29,10 +34,29 @@ jobs:
         run: npm run test
         working-directory: packages/contracts
 
+      - name: Contracts coverage & gas reports
+        run: npm run report:evidence
+        working-directory: packages/contracts
+
+      - name: Publish coverage summary
+        run: |
+          node -e "const summary=require('./packages/contracts/build/reports/coverage-summary.json');const totals=summary.total||summary;console.log('Coverage Totals:', JSON.stringify(totals, null, 2));"
+        working-directory: ${{ github.workspace }}
+
+      - name: Print gas report
+        run: cat build/reports/gas-report.txt
+        working-directory: packages/contracts
+
       - name: Relayer tests
         run: npm test
         working-directory: packages/relayer
 
       - name: Frontend targeted tests
-        run: npm test -- --watch=false --testPathPattern="(shop|contracts|words|RelayerStatusBanner|useRelayerNotifications)"
+        run: npm test -- --watch=false --testPathPattern="(shop|contracts|words|RelayerStatusBanner|useRelayerNotifications|useWorbooAssistant)"
         working-directory: react-wordle
+
+      - name: Upload contract evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: contracts-reports
+          path: packages/contracts/build/reports

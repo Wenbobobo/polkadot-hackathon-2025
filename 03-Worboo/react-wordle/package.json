@@ -8,6 +8,7 @@
     "lint": "prettier --check src",
     "start": "node scripts/start.js",
     "test": "node scripts/test.js",
+    "mock:assistant": "node scripts/mock-assistant.js",
     "build:wasm": "cd ../circuits && wasm-pack build --target web --out-dir ../client/public/pkg"
   },
   "dependencies": {
@@ -58,6 +59,7 @@
     "jest-resolve": "^27.4.2",
     "jest-watch-typeahead": "^1.0.0",
     "mini-css-extract-plugin": "^2.4.5",
+    "minimist": "^1.2.8",
     "postcss": "^8.4.4",
     "postcss-flexbugs-fixes": "^5.0.2",
     "postcss-loader": "^6.2.1",
