@@ -10,7 +10,7 @@ type PurchaseArgs = {
   quantity?: number
 }
 
-type WorbooProfile = {
+export type WorbooProfile = {
   isRegistered: boolean
   totalGames: number
   totalWins: number

@@ -5,8 +5,12 @@ import React, { useEffect } from 'react'
 import { useRelayerNotifications } from '../useRelayerNotifications'
 
 jest.mock('ethers', () => ({
-  ZeroAddress: '0x0000000000000000000000000000000000000000',
-  formatUnits: () => '10',
+  constants: {
+    AddressZero: '0x0000000000000000000000000000000000000000',
+  },
+  utils: {
+    formatUnits: () => '10',
+  },
 }))
 
 jest.mock('../../services/contracts', () => ({
@@ -28,7 +32,9 @@ jest.mock('wagmi', () => ({
   }),
 }))
 
-const { ZeroAddress } = require('ethers') as { ZeroAddress: string }
+const {
+  constants: { AddressZero: ZeroAddress },
+} = require('ethers') as { constants: { AddressZero: string } }
 
 class MockContract extends EventEmitter {
   on(event: string, listener: (...args: any[]) => void): this {

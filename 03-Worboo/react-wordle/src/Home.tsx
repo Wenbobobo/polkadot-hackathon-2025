@@ -18,7 +18,6 @@ import {
   CORRECT_WORD_MESSAGE,
   HARD_MODE_ALERT_MESSAGE,
   DISCOURAGE_INAPP_BROWSER_TEXT,
-  WORBOO_CHAT_MESSAGES,
 } from './constants/strings'
 import {
   MAX_CHALLENGES,
@@ -55,6 +54,7 @@ import { isInAppBrowser } from './lib/browser'
 import { MigrateStatsModal } from './components/modals/MigrateStatsModal'
 import { WordDetailModal } from './components/modals/WordDetailModal'
 import { ChatBubble } from './components/chat/ChatBubble'
+import { useWorbooAssistant } from './hooks/useWorbooAssistant'
 
 // Home组件：游戏的主要组件
 function Home() {
@@ -124,9 +124,12 @@ function Home() {
   const [stats, setStats] = useState(() => loadStats())
   const { address, isConnected } = useAccount()
   const [remainingGuesses, setRemainingGuesses] = useState(10)
-  const [aiMessage, setAiMessage] = useState(WORBOO_CHAT_MESSAGES[0])
-  const [aiMessageIndex, setAiMessageIndex] = useState(0)
-  const [isAiThinking, setIsAiThinking] = useState(false)
+  const {
+    message: aiMessage,
+    isThinking: isAiThinking,
+    requestHint: requestAssistantHint,
+    reset: resetAssistant,
+  } = useWorbooAssistant(solutionText)
 
   // Web3功能：检查钱包连接状态和剩余猜测次数
   // 每个用户每天有10次猜测机会
@@ -239,8 +242,7 @@ function Home() {
       setIsGameLost(false)
       setCurrentGuess('')
       // Reset chat message to the first one
-      setAiMessageIndex(0)
-      setAiMessage(WORBOO_CHAT_MESSAGES[0])
+      resetAssistant()
     }, 300)
   }
 
@@ -265,20 +267,20 @@ function Home() {
         WIN_MESSAGES[Math.floor(Math.random() * WIN_MESSAGES.length)]
       const delayMs = REVEAL_TIME_MS * solution.length
 
+      setIsWordDetailModalOpen(false)
       showSuccessAlert(winMessage, {
         delayMs,
         onClose: () => {
-          setIsWordDetailModalOpen(true)
-          setTimeout(() => setIsStatsModalOpen(true), 100)
+          setIsStatsModalOpen(true)
         },
       })
     }
 
     // 处理游戏失败状态
     if (isGameLost) {
+      setIsWordDetailModalOpen(false)
       setTimeout(() => {
-        setIsWordDetailModalOpen(true)
-        setTimeout(() => setIsStatsModalOpen(true), 100)
+        setIsStatsModalOpen(true)
       }, (solution.length + 1) * REVEAL_TIME_MS)
     }
   }, [isGameWon, isGameLost, showSuccessAlert])
@@ -374,13 +376,7 @@ function Home() {
       setGuesses([...guesses, currentGuess])
       setCurrentGuess('')
 
-      setIsAiThinking(true)
-      setTimeout(() => {
-        const nextIndex = (aiMessageIndex + 1) % WORBOO_CHAT_MESSAGES.length
-        setAiMessageIndex(nextIndex)
-        setAiMessage(WORBOO_CHAT_MESSAGES[nextIndex])
-        setIsAiThinking(false)
-      }, REVEAL_TIME_MS * solution.length)
+      void requestAssistantHint({ delayMs: REVEAL_TIME_MS * solution.length })
 
       if (winningWord) {
         // 猜对了，增加猜测次数并更新统计
@@ -399,18 +395,9 @@ function Home() {
         setIsGameLost(true)
         const newState = markCurrentWordAsCompleted() // Mark as failed
         
-        if (getDailyProgress().completed >= 10) {
-          // All words attempted, show final stats
-          setTimeout(() => {
-            setIsWordDetailModalOpen(true)
-            setTimeout(() => setIsStatsModalOpen(true), 100)
-          }, REVEAL_TIME_MS * solution.length + 1)
-        } else {
-          // Show current word details before moving to next word
-          setTimeout(() => {
-            setIsWordDetailModalOpen(true)
-          }, REVEAL_TIME_MS * solution.length + 1)
-        }
+        setTimeout(() => {
+          setIsStatsModalOpen(true)
+        }, REVEAL_TIME_MS * solution.length + 1)
         showErrorAlert(CORRECT_WORD_MESSAGE(solution.text), {
           persist: true,
           delayMs: REVEAL_TIME_MS * solution.length + 1,
@@ -429,11 +416,7 @@ function Home() {
         setIsInfoModalOpen={setIsInfoModalOpen}
         setIsStatsModalOpen={setIsStatsModalOpen}
         setIsSettingsModalOpen={setIsSettingsModalOpen}
-        dailyProgress={{
-          completed: getDailyProgress().completed,
-          total: 10,
-          currentIndex: getDailyProgress().completed
-        }}
+        dailyProgress={dailyProgress}
       />
       <div className="pt-2 px-1 pb-8 md:max-w-7xl w-full mx-auto sm:px-6 lg:px-8 flex flex-col grow">
         <div className="pb-6 grow">
@@ -485,8 +468,6 @@ function Home() {
         <StatsModal
           isOpen={isStatsModalOpen}
           handleClose={() => setIsStatsModalOpen(false)}
-          solution={solutionText}
-          guesses={guesses}
           gameStats={stats}
           isGameLost={isGameLost}
           isGameWon={isGameWon}
@@ -495,10 +476,9 @@ function Home() {
             setIsStatsModalOpen(false)
             setIsMigrateStatsModalOpen(true)
           }}
-          isHardMode={isHardMode}
-          isDarkMode={isDarkMode}
-          isHighContrastMode={isHighContrastMode}
           numberOfGuessesMade={guesses.length}
+          onShowWordDetails={() => setIsWordDetailModalOpen(true)}
+          onNextWord={onNextWord}
           dailyProgress={dailyProgress}
         />
         <MigrateStatsModal

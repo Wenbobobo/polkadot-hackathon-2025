@@ -247,8 +247,6 @@ function Verify() {
         <StatsModal
           isOpen={isStatsModalOpen}
           handleClose={() => setIsStatsModalOpen(false)}
-          solution={solution}
-          guesses={guesses}
           gameStats={stats}
           isGameLost={isGameLost}
           isGameWon={isGameWon}
@@ -257,10 +255,8 @@ function Verify() {
             setIsStatsModalOpen(false)
             setIsMigrateStatsModalOpen(true)
           }}
-          isHardMode={isHardMode}
-          isDarkMode={isDarkMode}
-          isHighContrastMode={isHighContrastMode}
           numberOfGuessesMade={guesses.length}
+          onShowWordDetails={() => {}}
         />
         <MigrateStatsModal
           isOpen={isMigrateStatsModalOpen}

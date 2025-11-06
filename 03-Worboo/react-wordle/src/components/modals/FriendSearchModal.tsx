@@ -6,22 +6,26 @@ import {
   FRIEND_SEARCH_PLACEHOLDER,
   FRIEND_NOT_FOUND_MESSAGE,
   FRIEND_ADD_BUTTON,
-  SHOP_ITEMS
+  SHOP_ITEMS,
+  FRIEND_PROFILE_OCID,
 } from '../../constants/strings'
+import { derivePolkaId, formatAddress } from '../../utils/polkaId'
+import type { WorbooFriend } from '../../types/friend'
 
 type UserProfile = {
   id: string
-  ocid: string
+  polkaId: string
   username: string
   level: number
   bio: string
   worbooPet?: string
+  wallet?: string
 }
 
 type Props = {
   isOpen: boolean
   handleClose: () => void
-  onAddFriend: (user: UserProfile) => void
+  onAddFriend: (user: WorbooFriend) => void
 }
 
 export const FriendSearchModal = ({ isOpen, handleClose, onAddFriend }: Props) => {
@@ -31,25 +35,37 @@ export const FriendSearchModal = ({ isOpen, handleClose, onAddFriend }: Props) =
   const [error, setError] = useState('')
 
   const handleSearch = () => {
-    if (!searchQuery.trim()) {
-      setError('Please enter an OCID to search')
+    const rawQuery = searchQuery.trim()
+    if (!rawQuery) {
+      setError('Please enter a Polka ID or wallet address to search')
       return
     }
 
     setIsSearching(true)
     setError('')
     
-    // Mock API call - in a real app, this would be an actual API call
+    const walletPattern = /^0x[a-fA-F0-9]{6,}$/
+    const polkaPattern = /^PL-\d{6}$/i
+    const numericPattern = /^\d{6}$/
+    const isValid = walletPattern.test(rawQuery) || polkaPattern.test(rawQuery) || numericPattern.test(rawQuery)
+    const polkaId = polkaPattern.test(rawQuery)
+      ? rawQuery.toUpperCase()
+      : numericPattern.test(rawQuery)
+      ? `PL-${rawQuery}`
+      : derivePolkaId(rawQuery)
+    const wallet = walletPattern.test(rawQuery) ? rawQuery : undefined
+
     setTimeout(() => {
-      // Mock user data - in a real app, this would come from the API
-      if (searchQuery.includes('0x')) {
+      if (isValid) {
+        const samplePet = SHOP_ITEMS[Math.floor(Math.random() * SHOP_ITEMS.length)]?.image
         setSearchResult({
-          id: '123',
-          ocid: searchQuery,
-          username: 'worboo_user',
-          level: 42,
-          bio: 'Learning English with Worboo! Let\'s make learning fun and engaging together. ✨',
-          worbooPet: SHOP_ITEMS[Math.floor(Math.random() * SHOP_ITEMS.length)].image
+          id: polkaId,
+          polkaId,
+          username: `worboo_${polkaId.slice(-3)}`,
+          level: 12 + (parseInt(polkaId.slice(-2), 10) % 20),
+          bio: 'Polkadot learner grinding Worboo streaks and hunting Moonbase loot.',
+          worbooPet: samplePet,
+          wallet,
         })
       } else {
         setError(FRIEND_NOT_FOUND_MESSAGE)
@@ -61,7 +77,15 @@ export const FriendSearchModal = ({ isOpen, handleClose, onAddFriend }: Props) =
 
   const handleAddFriend = () => {
     if (searchResult) {
-      onAddFriend(searchResult)
+      onAddFriend({
+        id: searchResult.id,
+        username: searchResult.username,
+        level: searchResult.level,
+        polkaId: searchResult.polkaId,
+        bio: searchResult.bio,
+        worbooPet: searchResult.worbooPet,
+        wallet: searchResult.wallet,
+      })
       handleClose()
     }
   }
@@ -178,11 +202,20 @@ export const FriendSearchModal = ({ isOpen, handleClose, onAddFriend }: Props) =
                               </div>
                               
                               <div className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
-                                <span className="mr-1">OCID:</span>
+                                <span className="mr-1">{FRIEND_PROFILE_OCID}</span>
                                 <code className="px-1.5 py-0.5 text-xs font-mono bg-gray-100 dark:bg-gray-700 rounded-md">
-                                  {searchResult.ocid.slice(0, 6)}...{searchResult.ocid.slice(-4)}
+                                  {searchResult.polkaId}
                                 </code>
                               </div>
+
+                              {searchResult.wallet && (
+                                <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                  <span className="mr-1 uppercase tracking-wide">Wallet</span>
+                                  <code className="px-1.5 py-0.5 text-[11px] font-mono bg-gray-100 dark:bg-gray-700 rounded-md">
+                                    {formatAddress(searchResult.wallet)}
+                                  </code>
+                                </div>
+                              )}
                               
                               <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
                                 {searchResult.bio}

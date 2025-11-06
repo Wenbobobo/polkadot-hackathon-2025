@@ -37,13 +37,16 @@ import {
 } from '../../constants/strings'
 import { ConnectButton, useConnectModal } from '@rainbow-me/rainbowkit'
 import { ProfileSidebar } from '../sidebar/ProfileSidebar'
-import { useAccount } from 'wagmi'
+import { useAccount, useNetwork } from 'wagmi'
 import { VocabularyModal } from '../vocabulary/VocabularyModal'
 import { useWorbooPlayer } from '../../hooks/useWorbooPlayer'
 import { WORBOO_CURRENCY_CODE } from '../../utils/shop'
 import { useRelayerNotifications } from '../../hooks/useRelayerNotifications'
 import { useRelayerHealth } from '../../hooks/useRelayerHealth'
 import { RelayerStatusBanner } from './RelayerStatusBanner'
+import { appConfig } from '../../config/appConfig'
+import { resolveRegistrationPrompt, type RegistrationPrompt } from './registrationState'
+import { describePurchaseError } from '../../utils/purchaseError'
 
 type Props = {
   setIsInfoModalOpen: (value: boolean) => void
@@ -91,7 +94,13 @@ export const Navbar = ({
   const [scoreBalance, setScoreBalance] = useState(1000) // Mock score balance
   const [openingChest, setOpeningChest] = useState<string | null>(null)
   const [rewardMessage, setRewardMessage] = useState<string | null>(null)
+  const [shopFeedback, setShopFeedback] = useState<{
+    type: 'success' | 'info' | 'error' | 'warning'
+    message: string
+  } | null>(null)
+  const [registrationError, setRegistrationError] = useState<string | null>(null)
   const { address, isConnected } = useAccount()
+  const { chain } = useNetwork()
   const { openConnectModal } = useConnectModal()
   const worbooPlayer = useWorbooPlayer(isConnected ? address : undefined)
   const {
@@ -120,6 +129,12 @@ export const Navbar = ({
     })
   }, [onChainInventory])
 
+  useEffect(() => {
+    if (!shopFeedback) return
+    const timer = setTimeout(() => setShopFeedback(null), 5000)
+    return () => clearTimeout(timer)
+  }, [shopFeedback])
+
   const formattedBalance = useMemo(() => {
     const numeric = Number(balanceFormatted)
     if (Number.isFinite(numeric)) {
@@ -127,6 +142,36 @@ export const Navbar = ({
     }
     return balanceFormatted
   }, [balanceFormatted])
+
+  const registrationPrompt = resolveRegistrationPrompt({
+    isConnected,
+    isReady: isWorbooReady,
+    profile,
+    chainId: chain?.id,
+    registrationError,
+  })
+
+  const isDemoMode = appConfig.features.shopDemoMode
+  const mustRegisterForShop = !isDemoMode && (!profile || !profile.isRegistered)
+
+  const registrationBannerStyles: Record<RegistrationPrompt['variant'], string> = {
+    info: 'bg-yellow-100 text-yellow-900 dark:bg-yellow-900/40 dark:text-yellow-100',
+    warning: 'bg-amber-100 text-amber-900 dark:bg-amber-900/30 dark:text-amber-100',
+    error: 'bg-red-100 text-red-900 dark:bg-red-900/40 dark:text-red-100',
+  }
+
+  const registrationButtonStyles: Record<RegistrationPrompt['variant'], string> = {
+    info: 'bg-yellow-500 text-yellow-900 hover:bg-yellow-400',
+    warning: 'bg-amber-500 text-amber-900 hover:bg-amber-400',
+    error: 'bg-red-500 text-red-50 hover:bg-red-400',
+  }
+
+  const shopFeedbackStyles: Record<'success' | 'info' | 'error' | 'warning', string> = {
+    success: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200',
+    info: 'bg-blue-100 text-blue-900 dark:bg-blue-900/30 dark:text-blue-200',
+    error: 'bg-red-100 text-red-900 dark:bg-red-900/40 dark:text-red-200',
+    warning: 'bg-amber-100 text-amber-900 dark:bg-amber-900/30 dark:text-amber-100',
+  }
 
   const handleRewardAcknowledged = useCallback(() => {
     refresh()
@@ -149,19 +194,27 @@ export const Navbar = ({
     enabled: Boolean(process.env.REACT_APP_RELAYER_HEALTH_URL),
   })
 
-  const requiresRegistration =
-    isConnected && isWorbooReady && profile && !profile.isRegistered
-
   const handleRegisterOnChain = async () => {
     if (!isConnected) {
       openConnectModal?.()
       return
     }
+
+    if (!registrationPrompt.canRegister) return
+
     try {
+      setRegistrationError(null)
       await register()
+      refresh()
     } catch (error) {
       console.error(error)
-      alert('Registration failed. Please try again after confirming the transaction in your wallet.')
+      const message =
+        error instanceof Error
+          ? error.message
+          : typeof error === 'string'
+          ? error
+          : 'Unknown error'
+      setRegistrationError(message)
     }
   }
 
@@ -254,12 +307,36 @@ export const Navbar = ({
       return
     }
 
-    if (requiresRegistration) {
-      await handleRegisterOnChain()
+    if (mustRegisterForShop) {
+      setShopFeedback({
+        type: 'warning',
+        message: 'Register on-chain to unlock Worboo collectibles.',
+      })
+      return
+    }
+
+    const shouldUseDemoFlow = isDemoMode || !isWorbooReady || !purchase
+
+    if (shouldUseDemoFlow) {
+      setInventory((prev) => ({
+        ...prev,
+        [item.id]: true,
+      }))
+      if (item.id.includes('chest')) {
+        setOwnedChests((prev) => ({
+          ...prev,
+          [item.id]: (prev[item.id as keyof typeof prev] || 0) + 1,
+        }))
+      }
+      setShopFeedback({
+        type: 'info',
+        message: `Demo mode: ${item.name} unlocked locally. Deploy WorbooShop for live ownership.`,
+      })
       return
     }
 
     try {
+      setShopFeedback(null)
       await purchase({ itemId: item.id, quantity: 1 })
       setInventory((prev) => ({
         ...prev,
@@ -271,9 +348,17 @@ export const Navbar = ({
           [item.id]: (prev[item.id as keyof typeof prev] || 0) + 1,
         }))
       }
+      setShopFeedback({
+        type: 'success',
+        message: `Purchased ${item.name}! Check your wardrobe and inventory.`,
+      })
+      refresh()
     } catch (error) {
       console.error(error)
-      alert('Purchase failed. Please confirm the transaction in your wallet and try again.')
+      setShopFeedback({
+        type: 'error',
+        message: describePurchaseError(error),
+      })
     }
   }
 
@@ -296,8 +381,15 @@ export const Navbar = ({
           ...ownedKeys,
           [item.id]: (ownedKeys[item.id as keyof typeof ownedKeys] || 0) + 1,
         })
+        setShopFeedback({
+          type: 'success',
+          message: `Purchased ${item.name}! Use it to unlock Worboo treasure.`,
+        })
       } else {
-        alert('Not enough Score to purchase this key!')
+        setShopFeedback({
+          type: 'error',
+          message: 'Not enough Score to purchase this key.',
+        })
       }
     }
   }
@@ -355,7 +447,10 @@ export const Navbar = ({
         }, 1500)
       }, 1000)
     } else {
-      alert(`You need a ${requiredKey.replace('_', ' ')} to open this chest!`)
+      setShopFeedback({
+        type: 'error',
+        message: `You need a ${requiredKey.replace('_', ' ')} to open this chest.`,
+      })
     }
   }
 
@@ -438,16 +533,22 @@ export const Navbar = ({
           )}
           <ConnectButton />
         </div>
-        {requiresRegistration && (
-          <div className="mt-3 flex items-center justify-between rounded-lg bg-yellow-100 px-3 py-2 text-sm font-medium text-yellow-900 dark:bg-yellow-900/40 dark:text-yellow-100">
-            <span>Register on-chain to start earning {tokenSymbol} rewards.</span>
-            <button
-              onClick={() => void handleRegisterOnChain()}
-              className="inline-flex items-center rounded-md bg-yellow-500 px-3 py-1 text-xs font-semibold text-yellow-900 hover:bg-yellow-400 disabled:opacity-60"
-              disabled={isRegistering}
-            >
-              {isRegistering ? 'Registering…' : 'Register'}
-            </button>
+        {registrationPrompt.visible && (
+          <div
+            className={`mt-3 flex flex-col gap-2 rounded-lg px-3 py-2 text-sm font-medium ${registrationBannerStyles[registrationPrompt.variant]}`}
+          >
+            <span>{registrationPrompt.message}</span>
+            {registrationPrompt.canRegister && (
+              <div className="flex justify-end">
+                <button
+                  onClick={() => void handleRegisterOnChain()}
+                  className={`inline-flex items-center rounded-md px-3 py-1 text-xs font-semibold disabled:opacity-60 ${registrationButtonStyles[registrationPrompt.variant]}`}
+                  disabled={isRegistering}
+                >
+                  {isRegistering ? 'Registering…' : 'Register'}
+                </button>
+              </div>
+            )}
           </div>
         )}
         <div className="right-icons">
@@ -494,7 +595,11 @@ export const Navbar = ({
         </div>
       </div>
       <hr></hr>
-      <ProfileSidebar isOpen={isSidebarOpen && isConnected} setIsOpen={setIsSidebarOpen} />
+      <ProfileSidebar
+        isOpen={isSidebarOpen && isConnected}
+        setIsOpen={setIsSidebarOpen}
+        playerAddress={address ?? undefined}
+      />
       
       {/* Shop Modal */}
       <Transition.Root show={isShopModalOpen} as={Fragment}>
@@ -584,6 +689,14 @@ export const Navbar = ({
                         {rewardMessage}
                       </div>
                     )}
+
+                    {shopFeedback && (
+                      <div
+                        className={`mt-4 rounded-lg p-3 text-sm ${shopFeedbackStyles[shopFeedback.type]}`}
+                      >
+                        {shopFeedback.message}
+                      </div>
+                    )}
                     
                     {/* Items Grid */}
                     <div className="mt-6 grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-3 xl:gap-x-8">
@@ -650,7 +763,7 @@ export const Navbar = ({
                                   className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 rounded-md border border-transparent py-2 px-8 text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                                   disabled={
                                     !isConnected ||
-                                    (isWorbooCurrency(item) && (isPurchasing || requiresRegistration))
+                                    (isWorbooCurrency(item) && (isPurchasing || mustRegisterForShop))
                                   }
                                 >
                                   {SHOP_BUY_BUTTON}
@@ -667,7 +780,7 @@ export const Navbar = ({
                                       disabled={
                                         openingChest !== null ||
                                         !isConnected ||
-                                        (isWorbooCurrency(item) && (isPurchasing || requiresRegistration))
+                                        (isWorbooCurrency(item) && (isPurchasing || mustRegisterForShop))
                                       }
                                     >
                                       {SHOP_BUY_BUTTON}

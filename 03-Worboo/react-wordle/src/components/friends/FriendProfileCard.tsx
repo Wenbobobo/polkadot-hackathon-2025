@@ -8,23 +8,13 @@ import {
   FRIEND_PROFILE_MESSAGE_BUTTON,
   FRIEND_PROFILE_GIFT_BUTTON,
   FRIEND_PROFILE_COPY_OCID,
-  FRIEND_PROFILE_COPIED_OCID,
-  SHOP_ITEMS
+  FRIEND_PROFILE_COPIED_OCID
 } from '../../constants/strings'
-
-type Friend = {
-  id: string
-  username: string
-  level: number
-  ocid: string
-  bio: string
-  avatar?: string
-  lastActive?: string
-  worbooPet?: string
-}
+import type { WorbooFriend } from '../../types/friend'
+import { formatAddress } from '../../utils/polkaId'
 
 type Props = {
-  friend: Friend
+  friend: WorbooFriend
   isOpen: boolean
   onClose: () => void
 }
@@ -32,8 +22,9 @@ type Props = {
 export const FriendProfileCard = ({ friend, isOpen, onClose }: Props) => {
   const [copied, setCopied] = useState(false)
 
-  const copyOcid = () => {
-    navigator.clipboard.writeText(friend.ocid)
+  const copyPolkaId = () => {
+    const valueToCopy = friend.wallet ?? friend.polkaId
+    navigator.clipboard.writeText(valueToCopy)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
@@ -113,18 +104,26 @@ export const FriendProfileCard = ({ friend, isOpen, onClose }: Props) => {
                       </p>
                     )}
                     
-                    {/* OCID */}
+                    {/* Polka ID */}
                     <div className="mt-4 w-full flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-800/30 border border-gray-200 dark:border-gray-700">
-                      <div className="flex items-center space-x-2">
-                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{FRIEND_PROFILE_OCID}</span>
-                        <code className="px-2 py-1 text-sm font-mono font-medium bg-white dark:bg-gray-800 rounded-md text-blue-600 dark:text-blue-400 border border-gray-200 dark:border-gray-700">
-                          {friend.ocid.slice(0, 6)}...{friend.ocid.slice(-4)}
-                        </code>
+                      <div className="flex flex-col space-y-1">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{FRIEND_PROFILE_OCID}</span>
+                          <code className="px-2 py-1 text-sm font-mono font-medium bg-white dark:bg-gray-800 rounded-md text-blue-600 dark:text-blue-400 border border-gray-200 dark:border-gray-700">
+                            {friend.polkaId}
+                          </code>
+                        </div>
+                        {friend.wallet && (
+                          <div className="flex items-center space-x-2 text-xs text-gray-500 dark:text-gray-400">
+                            <span className="uppercase tracking-wide">Wallet</span>
+                            <span className="font-mono text-gray-600 dark:text-gray-300">{formatAddress(friend.wallet)}</span>
+                          </div>
+                        )}
                       </div>
                       <button 
                         className="group p-1.5 rounded-md text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 transition-colors focus:outline-none" 
                         title={copied ? FRIEND_PROFILE_COPIED_OCID : FRIEND_PROFILE_COPY_OCID}
-                        onClick={copyOcid}
+                        onClick={copyPolkaId}
                       >
                         <ClipboardCopyIcon className={`h-5 w-5 transition-transform group-hover:scale-110 ${copied ? "text-green-500" : ""}`} />
                       </button>

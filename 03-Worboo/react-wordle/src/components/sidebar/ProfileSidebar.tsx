@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import { Dialog, Transition, Disclosure } from '@headlessui/react'
 import {
   XIcon,
@@ -19,6 +19,8 @@ import {
   FRIEND_PROFILE_CHALLENGE_BUTTON,
   FRIEND_PROFILE_LEVEL,
 } from '../../constants/strings'
+import { derivePolkaId, formatAddress, copyToClipboard } from '../../utils/polkaId'
+import type { WorbooFriend } from '../../types/friend'
 
 type DisclosureRenderProps = {
   open: boolean
@@ -27,54 +29,114 @@ type DisclosureRenderProps = {
 interface Props {
   isOpen: boolean
   setIsOpen: (isOpen: boolean) => void
+  playerAddress?: string
 }
 
-type Friend = {
-  id: string
-  username: string
-  level: number
-  ocid: string
-  bio: string
-  avatar?: string
-  lastActive?: string
+type Friend = WorbooFriend
+
+const ACTIVITY_ROWS = 7
+const ACTIVITY_COLS = 20
+
+const generateContributionMatrix = (seed: string) => {
+  let hash = 0
+  for (const char of seed) {
+    hash = (hash * 31 + char.charCodeAt(0)) >>> 0
+  }
+
+  const matrix: number[][] = []
+  for (let row = 0; row < ACTIVITY_ROWS; row++) {
+    const currentRow: number[] = []
+    for (let col = 0; col < ACTIVITY_COLS; col++) {
+      hash = (hash * 1664525 + 1013904223) >>> 0
+      currentRow.push(hash % 4)
+    }
+    matrix.push(currentRow)
+  }
+  return matrix
 }
 
-export const ProfileSidebar = ({ isOpen, setIsOpen }: Props) => {
-  const contributionData = Array(365).fill(0).map(() => Math.floor(Math.random() * 4))
+const WORBOO_BADGES: Array<{ id: string; label: string; image: string }> = [
+  { id: 'alpha', label: 'Alpha Explorer', image: '/worboo/worboo-sunglass.png' },
+  { id: 'relay', label: 'Relay Ranger', image: '/worboo/worboo-unruly.png' },
+  { id: 'moonbase', label: 'Moonbase MVP', image: '/worboo/worboo-redpepper.png' },
+  { id: 'shop', label: 'Collectible Curator', image: '/worboo/worboo-like.png' },
+]
+
+export const ProfileSidebar = ({ isOpen, setIsOpen, playerAddress }: Props) => {
+  const playerPolkaId = useMemo(() => derivePolkaId(playerAddress), [playerAddress])
+  const displayAddress = formatAddress(playerAddress)
+  const contributionMatrix = useMemo(
+    () => generateContributionMatrix(playerAddress ?? 'worboo'),
+    [playerAddress]
+  )
+  const activityScore = useMemo(
+    () => contributionMatrix.flat().reduce((sum, value) => sum + value, 0),
+    [contributionMatrix]
+  )
+  const playerLevel = useMemo(() => 10 + Math.floor(activityScore / 40), [activityScore])
+  const playerHandle = playerAddress ? 'Worboo Pilot' : 'Guest Explorer'
+  const badgeSlots = useMemo<(typeof WORBOO_BADGES[number] | null)[]>(() => {
+    const slots: Array<typeof WORBOO_BADGES[number] | null> = [...WORBOO_BADGES]
+    while (slots.length < 8) {
+      slots.push(null)
+    }
+    return slots
+  }, [])
+
+  const [copiedPlayerId, setCopiedPlayerId] = useState(false)
   const [isFriendSearchOpen, setIsFriendSearchOpen] = useState(false)
   const [selectedFriend, setSelectedFriend] = useState<Friend | null>(null)
   const [friends, setFriends] = useState<Friend[]>([
     {
       id: '1',
-      username: 'Player 1',
-      level: 10,
-      ocid: '0x1234...5678',
-      bio: 'Learning English with Worboo! Let\'s make learning fun together.',
-      lastActive: 'Today'
+      username: 'Moonbase Mentor',
+      level: 18,
+      polkaId: 'PL-421084',
+      bio: 'Guiding new pilots through Moonbase Alpha dailies.',
+      lastActive: 'Today',
+      worbooPet: '/worboo/worboo-sunglass.png',
+      wallet: '0xB4c6a21f9F1223456789abcdEF1234567890abcd',
     },
     {
       id: '2',
-      username: 'Player 2',
-      level: 20,
-      ocid: '0x2345...6789',
-      bio: 'English enthusiast and Worboo lover!',
-      lastActive: 'Yesterday'
+      username: 'Relay Ranger',
+      level: 24,
+      polkaId: 'PL-982314',
+      bio: 'Keeps the reward relayer humming—ping for tips!',
+      lastActive: 'Yesterday',
+      worbooPet: '/worboo/worboo-pig.png',
+      wallet: '0xD2ff8934c2A0bE9a6789DCFE1234567890abCDEF',
     },
     {
       id: '3',
-      username: 'Player 3',
-      level: 30,
-      ocid: '0x3456...7890',
-      bio: 'On a journey to master English through Worboo.',
-      lastActive: '3 days ago'
+      username: 'Parachain Pro',
+      level: 31,
+      polkaId: 'PL-563204',
+      bio: 'Farming streaks across every Polkadot parachain classroom.',
+      lastActive: '3 days ago',
+      worbooPet: '/worboo/worboo-redpepper.png',
+      wallet: '0xA1c3dE5678901234ABCd5678901234abcdef5678',
     },
   ])
   
-  const handleAddFriend = (newFriend: any) => {
-    setFriends([...friends, {
-      ...newFriend,
-      lastActive: 'Just now'
-    }])
+  const handleAddFriend = (newFriend: Friend) => {
+    setFriends((prev) => [
+      ...prev,
+      {
+        ...newFriend,
+        lastActive: 'Just now',
+      },
+    ])
+  }
+
+  const handleCopyPlayerId = async () => {
+    const valueToCopy = playerAddress ?? playerPolkaId
+    if (!valueToCopy) return
+    const success = await copyToClipboard(valueToCopy)
+    if (success) {
+      setCopiedPlayerId(true)
+      setTimeout(() => setCopiedPlayerId(false), 1500)
+    }
   }
   
   const openFriendProfile = (friend: Friend) => {
@@ -137,11 +199,12 @@ export const ProfileSidebar = ({ isOpen, setIsOpen }: Props) => {
                               <UserIcon className="h-8 w-8 text-white" />
                             </div>
                             <div className="absolute -bottom-1 right-0 h-6 w-6 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center ring-2 ring-white dark:ring-gray-900">
-                              <span className="text-xs font-bold text-white">42</span>
+                              <span className="text-xs font-bold text-white">{playerLevel}</span>
                             </div>
                           </div>
                           <div className="pt-1">
-                            <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">alfred.edu</h3>
+                            <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">{playerHandle}</h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">{playerPolkaId}</p>
                           </div>
                         </div>
                         <button 
@@ -156,19 +219,34 @@ export const ProfileSidebar = ({ isOpen, setIsOpen }: Props) => {
                       {/* OCID and Bio */}
                       <div className="mt-4 space-y-4">
                         <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-800/30 border border-gray-200 dark:border-gray-700">
-                          <div className="flex items-center space-x-3">
+                          <div className="flex flex-col space-y-1">
                             <div className="flex items-center space-x-2">
-                              <span className="text-sm font-medium text-gray-500 dark:text-gray-400">OCID:</span>
-                              <code className="px-2.5 py-1 text-sm font-mono font-medium bg-white dark:bg-gray-800 rounded-md text-blue-600 dark:text-blue-400 border border-gray-200 dark:border-gray-700">0x1234...5678</code>
+                              <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                {FRIEND_PROFILE_OCID}
+                              </span>
+                              <code className="px-2.5 py-1 text-sm font-mono font-medium bg-white dark:bg-gray-800 rounded-md text-blue-600 dark:text-blue-400 border border-gray-200 dark:border-gray-700">
+                                {playerPolkaId}
+                              </code>
+                            </div>
+                            <div className="flex items-center space-x-2 text-xs text-gray-500 dark:text-gray-400">
+                              <span className="uppercase tracking-wide">Wallet</span>
+                              <span className="font-mono text-gray-600 dark:text-gray-300">{displayAddress}</span>
                             </div>
                           </div>
-                          <button className="group p-1.5 rounded-md text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 transition-colors focus:outline-none" title="Copy OCID">
-                            <ClipboardCopyIcon className="h-5 w-5 transition-transform group-hover:scale-110" />
+                          <button
+                            className="group p-1.5 rounded-md text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 transition-colors focus:outline-none"
+                            title={copiedPlayerId ? FRIEND_PROFILE_COPIED_OCID : FRIEND_PROFILE_COPY_OCID}
+                            onClick={() => void handleCopyPlayerId()}
+                          >
+                            <ClipboardCopyIcon
+                              className={`h-5 w-5 transition-transform group-hover:scale-110 ${copiedPlayerId ? 'text-green-500' : ''}`}
+                            />
                           </button>
                         </div>
 
                         <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
-                          Learning English with Worboo! Let's make learning fun and engaging together. 
+                          Completing word quests across Polkadot classrooms. Earn WBOO, unlock collectibles, and bring new
+                          learners into the Worboo universe.
                         </p>
                       </div>
                     </div>
@@ -177,20 +255,21 @@ export const ProfileSidebar = ({ isOpen, setIsOpen }: Props) => {
                     <div className="px-4 py-6 sm:px-6 border-t border-gray-200 dark:border-gray-700">
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Activity</h3>
-                        <div className="flex items-center space-x-2">
-                          <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Score:</span>
-                          <span className="text-lg font-semibold text-green-600 dark:text-green-400">1337</span>
-                        </div>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Score:</span>
+                        <span className="text-lg font-semibold text-green-600 dark:text-green-400">
+                          {activityScore * 12}
+                        </span>
                       </div>
-                      <div className="flex flex-col gap-1">
-                        {Array.from({ length: 7 }).map((_, row) => (
-                          <div key={row} className="flex gap-1 justify-center">
-                            {Array.from({ length: 20 }).map((_, col) => {
-                              const value = Math.floor(Math.random() * 4)
-                              return (
-                                <div
-                                  key={`${row}-${col}`}
-                                  className={`
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      {contributionMatrix.map((rowValues, row) => (
+                        <div key={row} className="flex gap-1 justify-center">
+                          {rowValues.map((value, col) => {
+                            return (
+                              <div
+                                key={`${row}-${col}`}
+                                className={`
                                     w-3 h-3 rounded-sm
                                     ${value === 0 ? 'bg-gray-200 dark:bg-gray-700' :
                                       value === 1 ? 'bg-green-300 dark:bg-green-700' :
@@ -244,7 +323,9 @@ export const ProfileSidebar = ({ isOpen, setIsOpen }: Props) => {
                                         </div>
                                         <div>
                                           <div className="font-medium">{friend.username}</div>
-                                          <div className="text-xs text-gray-500 dark:text-gray-400">{FRIEND_PROFILE_LEVEL} {friend.level}</div>
+                                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                                            {FRIEND_PROFILE_LEVEL} {friend.level} • {friend.polkaId}
+                                          </div>
                                         </div>
                                       </div>
                                       <button className="text-xs text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300">
@@ -304,10 +385,24 @@ export const ProfileSidebar = ({ isOpen, setIsOpen }: Props) => {
                               </Disclosure.Button>
                               <Disclosure.Panel className="px-4 pt-4 pb-2 text-sm text-gray-600 dark:text-gray-300">
                                 <div className="grid grid-cols-4 gap-2">
-                                  {Array.from({ length: 8 }).map((_, i) => (
-                                    <div key={i} className="aspect-square rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center hover:border-purple-500 dark:hover:border-purple-400 cursor-pointer transition-colors">
-                                      {i < 3 && (
-                                        <div className="w-full h-full rounded-md bg-gradient-to-br from-purple-500 to-pink-500"></div>
+                                  {badgeSlots.map((badge, index) => (
+                                    <div
+                                      key={badge?.id ?? `locked-${index}`}
+                                      className="relative aspect-square rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center overflow-hidden hover:border-purple-500 dark:hover:border-purple-400 transition-colors"
+                                    >
+                                      {badge ? (
+                                        <>
+                                          <img
+                                            src={badge.image}
+                                            alt={badge.label}
+                                            className="h-full w-full object-cover"
+                                          />
+                                          <span className="absolute bottom-1 left-1 right-1 rounded-md bg-purple-600/80 px-1 text-[10px] font-semibold text-white text-center">
+                                            {badge.label}
+                                          </span>
+                                        </>
+                                      ) : (
+                                        <span className="text-xs text-gray-400 dark:text-gray-500">Locked</span>
                                       )}
                                     </div>
                                   ))}

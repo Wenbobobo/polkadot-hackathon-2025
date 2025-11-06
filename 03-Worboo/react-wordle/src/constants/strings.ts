@@ -52,20 +52,21 @@ export const WORBOO_CHAT_MESSAGES = [
 
 // Friend System
 export const FRIEND_SEARCH_TITLE = 'Find Friends'
-export const FRIEND_SEARCH_PLACEHOLDER = 'Enter OCID (e.g., 0x1234...5678)'
+export const FRIEND_SEARCH_PLACEHOLDER = 'Enter Polka ID or wallet (e.g., PL-421084)'
 export const FRIEND_SEARCH_BUTTON = 'Search'
 export const FRIEND_ADD_BUTTON = 'Add Friend'
 export const FRIEND_ADDED_MESSAGE = 'Friend added successfully!'
-export const FRIEND_NOT_FOUND_MESSAGE = 'User not found. Please check the OCID and try again.'
+export const FRIEND_NOT_FOUND_MESSAGE =
+  'User not found. Please check the Polka ID or wallet address and try again.'
 export const FRIEND_ALREADY_ADDED_MESSAGE = 'This user is already in your friends list.'
 export const FRIEND_LIST_TITLE = 'Friends List'
 export const FRIEND_PROFILE_LAST_ACTIVE = 'Last active:'
 export const FRIEND_PROFILE_LEVEL = 'Level'
-export const FRIEND_PROFILE_OCID = 'OCID:'
+export const FRIEND_PROFILE_OCID = 'Worboo ID:'
 export const FRIEND_PROFILE_MESSAGE_BUTTON = 'Message'
 export const FRIEND_PROFILE_GIFT_BUTTON = 'Send Gift'
 export const FRIEND_PROFILE_CHALLENGE_BUTTON = 'Challenge'
-export const FRIEND_PROFILE_COPY_OCID = 'Copy OCID'
+export const FRIEND_PROFILE_COPY_OCID = 'Copy ID'
 export const FRIEND_PROFILE_COPIED_OCID = 'Copied!'
 
 // Shop constants
