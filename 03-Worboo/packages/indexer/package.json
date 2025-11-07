@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "ts-node src/server.ts",
-    "snapshot": "ts-node src/snapshot.ts",
+    "start": "node --loader ts-node/esm src/server.ts",
+    "snapshot": "node --loader ts-node/esm src/snapshot.ts",
     "build": "tsc -p tsconfig.json",
     "lint": "eslint src --ext .ts"
   },

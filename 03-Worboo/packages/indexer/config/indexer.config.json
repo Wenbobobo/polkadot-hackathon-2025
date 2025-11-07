@@ -1,0 +1,11 @@
+{
+  "rpcUrl": "https://rpc.api.moonbase.moonbeam.network",
+  "registryAddress": "0x0000000000000000000000000000000000000000",
+  "fromBlock": 0,
+  "pollIntervalMs": 30000,
+  "cachePath": "cache/leaderboard.json",
+  "http": {
+    "host": "127.0.0.1",
+    "port": 8789
+  }
+}

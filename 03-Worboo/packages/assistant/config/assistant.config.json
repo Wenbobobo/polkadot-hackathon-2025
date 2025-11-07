@@ -24,6 +24,13 @@
         "Authorization": "Bearer replace-me",
         "Content-Type": "application/json"
       },
+      "secretHeaders": [
+        {
+          "env": "ASSISTANT_API_KEY",
+          "header": "Authorization",
+          "prefix": "Bearer "
+        }
+      ],
       "bodyTemplate": {
         "model": "{{model}}",
         "messages": [
