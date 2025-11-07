@@ -51,7 +51,7 @@ See [`mvp-architecture.md`](mvp-architecture.md) for detailed data flow diagrams
    Record the contract addresses output by Ignition (the helper prints `.env`-ready lines).
 4. **Configure frontend**
    - Update `react-wordle/.env` with the deployed `WorbooRegistry`, `WorbooToken`, `WorbooShop` addresses.
-   - Start the UI: `npm start` (from `react-wordle`).
+   - Start the UI: `npm run dev` (from `react-wordle`; `npm start` alias remains).
    - Connect a wallet (RainbowKit prompts Moonbase Alpha), click **Register**, solve the Wordle challenge, and use WBOO rewards in the shop.
 5. **Start the reward relayer (optional)**
    ```bash
@@ -66,11 +66,12 @@ See [`mvp-architecture.md`](mvp-architecture.md) for detailed data flow diagrams
    - Contracts: `packages/contracts/npm run test`.
    - Monorepo lint: `npm run lint`.
    - Contracts (coverage/gas): `packages/contracts/npm run coverage` and `npm run gas` (set `REPORT_GAS=true`).
-   - Targeted frontend tests: `react-wordle/npm test -- --watch=false --testPathPattern="(shop|contracts|words|RelayerStatusBanner|useRelayerNotifications)"`.
+   - Targeted frontend tests: `react-wordle/npm run test:targeted`.
+   - Generate JSON artifact: `react-wordle/npm run test:targeted:report` (writes to `react-wordle/reports/frontend-targeted.json`).
    - Relayer: `packages/relayer/npm test`.
    - Relayer health snapshot: `packages/relayer/npm run status` (or `curl http://localhost:8787/healthz`).
 
-> **Note:** Legacy CRA tests referencing ZK worker code still require a jest upgrade; they are excluded from judging instructions.
+> **Note:** Vite/Vitest is now the default frontend toolchain. Use the targeted script above for smoke tests across relayer hooks, navbar banners, and shop utilities.
 
 ---
 

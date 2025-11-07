@@ -80,6 +80,7 @@ sequenceDiagram
 | Path | Purpose |
 | --- | --- |
 | `packages/contracts/` | Hardhat workspace (contracts, tests, Ignition deployment module, TypeChain outputs). |
+| `packages/assistant/` | Configurable Worboo assistant backend (static fallback or proxy to a real LLM). |
 | `react-wordle/` | Frontend app with wallet connectivity, Moonbase integration, and UI for the Worboo shop. |
 | `doc/` | Hackathon collateral: architecture notes, migration research, implementation plan, and onboarding docs. |
 
@@ -127,16 +128,34 @@ REACT_APP_RELAYER_HEALTH_URL=http://localhost:8787/healthz
 
 > If `REACT_APP_RELAYER_HEALTH_URL` is omitted, the frontend defaults to `/healthz` on the same origin, so local dev can rely on the health server port defined above.
 
-Optional feature toggles live in `react-wordle/src/config/appConfig.ts`:
+Optional feature toggles live in `react-wordle/src/config/app-config.json` (edit the JSON directly for Windows-friendly config files). The TypeScript helper (`appConfig.ts`) merges those values with any env overrides:
 
 - `shopDemoMode`: keep `true` for offline demos that simulate purchases without on-chain balance.
 - `zkProofsEnabled`: flip to `true` once the Halo2 proving pipeline is back online (the stats modal currently shows a “coming soon” notice).
 - `aiAssistant`: wire `enabled`, `baseUrl`, and `model` to integrate your own LLM-powered hint endpoint. Prompts support a `{word}` token for dynamic hints.
 
-> Tip: all of the toggles above can be overwritten via env vars in `.env.local`:
+> Tip: the JSON config is the recommended path for hackathon rehearsals, but every value can still be overwritten via env vars in `.env.local` if you prefer:
 > `REACT_APP_SHOP_DEMO_MODE`, `REACT_APP_ZK_PROOFS_ENABLED`, `REACT_APP_ASSISTANT_ENABLED`, `REACT_APP_ASSISTANT_URL`, `REACT_APP_ASSISTANT_MODEL`, `REACT_APP_ASSISTANT_PROMPT_FIRST`, `REACT_APP_ASSISTANT_PROMPT_RETRY`.
 
-Need a quick demo backend? Run the bundled mock server:
+Need a quick demo backend? You have two options:
+
+**Option A – Worboo assistant service (recommended)**
+
+```bash
+cd packages/assistant
+cp config/assistant.config.json config/assistant.config.local.json  # optional: customise prompts, headers
+npm start
+```
+
+Set `REACT_APP_ASSISTANT_ENABLED=true` and point `REACT_APP_ASSISTANT_URL` to the service (default `http://127.0.0.1:8788/hint`). The backend supports both static responses and proxy mode—edit the JSON config to supply your upstream URL, headers (API keys), response path, and timeout.
+
+Need to smoke-test the service? Use the bundled CLI:
+
+```bash
+npm run hint --workspace assistant-service -- --prompt "Give me a Worboo hint" --model moonbase-hint
+```
+
+**Option B – lightweight mock**
 
 ```bash
 cd react-wordle
@@ -180,10 +199,12 @@ Populate the frontend `.env` addresses with the resulting deployment output.
 
 ```bash
 cd react-wordle
-npm start
+npm run dev
 ```
 
-RainbowKit presents Moonbase Alpha by default. Connect a wallet, register on-chain, and start purchasing items with WBOO.
+> `npm start` remains available as an alias for `npm run dev` if you prefer the classic command.
+
+RainbowKit presents Moonbase Alpha by default. Connect a wallet, register on-chain, and start purchasing items with WBOO. Pass `--host 0.0.0.0 --port 3000` after the dev command if you need to expose the UI over your LAN.
 
 ### 8. (Optional) Start the reward relayer
 
@@ -240,7 +261,23 @@ cd packages/relayer
 npm run status
 ```
 
-An HTTP endpoint is also exposed at `http://localhost:8787/healthz` (configurable via env) so dashboards or the frontend can read queue depth and heartbeat information.
+### 9. (Optional) Launch the Worboo assistant backend
+
+```bash
+cd packages/assistant
+npm start
+```
+
+Update `config/assistant.config.json` (or set `ASSISTANT_CONFIG_PATH` to point elsewhere) to switch between static hint messages and proxy mode. When proxying, specify the upstream endpoint, headers (for auth), request template, and response path so the service can extract the hint string returned to the frontend. Call `http://localhost:8788/healthz` (configurable) to inspect assistant uptime, request counters, and fallback usage—ideal for dashboards alongside the relayer metrics.
+
+### 9. (Optional) Snapshot the leaderboard
+
+After running through a few Moonbase games, grab a JSON snapshot for judges or dashboards:
+
+```bash
+# from packages/contracts
+npm run leaderboard -- --registry=0xYourRegistry --limit=10 --network moonbase
+```
 
 ---
 
@@ -250,13 +287,14 @@ An HTTP endpoint is also exposed at `http://localhost:8787/healthz` (configurabl
 | --- | --- | --- |
 | Monorepo lint | `npm run lint` | Shared ESLint config covering the contracts and relayer packages. |
 | Smart contracts | `npm run test` (in `packages/contracts`) | Hardhat + ethers v6, deterministic tests for registry/token/shop. |
-| Frontend services | `npm test -- --watch=false --testPathPattern="(shop|contracts|words)"` | Runs the curated unit tests (shop utilities, contract config, word helpers). Legacy CRA tests currently require additional polyfills (see “Known Issues”). |
+| Frontend services | `npm run test:targeted` (in `react-wordle`) | Vitest run focused on relayer hooks, navbar feedback, word utilities, and shop helpers. |
+| Frontend report | `npm run test:targeted:report` (in `react-wordle`) | Same suite with a JSON artifact written to `react-wordle/reports/frontend-targeted.json` for evidence uploads. |
 | Relayer service | `npm test` (in `packages/relayer`) | Vitest suite covering config parsing, persistence store, and mint retry handler. |
 | Relayer health | `npm run status` (in `packages/relayer`) | Prints JSON snapshot covering queue depth, last mint, and cache size. |
 
 ### Known Issues
 
-- `react-wordle` ships original ZK worker code that relies on `import.meta`. CRA/Jest defaults stumble on this syntax. We are keeping the original tests untouched; run targeted test patterns as shown above until the test harness is modernised.
+- ZK/worker modules still log warnings during the build because of WASM thread pool initialisation—this is expected for the current Halo2 pipeline and is documented in `doc/roadmap-next.md`.
 - Existing word-list snapshot tests may fail due to timezone/locale; see `src/lib/words.test.ts` for context if you need deterministic indices.
 
 ---

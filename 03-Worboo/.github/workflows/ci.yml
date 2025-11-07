@@ -52,7 +52,11 @@ jobs:
         working-directory: packages/relayer
 
       - name: Frontend targeted tests
-        run: npm test -- --watch=false --testPathPattern="(shop|contracts|words|RelayerStatusBanner|useRelayerNotifications|useWorbooAssistant)"
+        run: npm run test:targeted
+        working-directory: react-wordle
+
+      - name: Frontend targeted report
+        run: npm run test:targeted:report
         working-directory: react-wordle
 
       - name: Upload contract evidence
@@ -60,3 +64,10 @@ jobs:
         with:
           name: contracts-reports
           path: packages/contracts/build/reports
+
+      - name: Upload frontend targeted report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-targeted-report
+          path: react-wordle/reports/frontend-targeted.json

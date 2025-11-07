@@ -16,7 +16,7 @@ This guide is written for live judging sessions. Follow it to demonstrate the Wo
   (Alternatively, copy the output into `react-wordle/.env`.)
 - [ ] Check relayer health: `cd packages/relayer && npm run status` (expect `status: "idle"`).
 - [ ] Run `npm run test` inside `packages/contracts` to show the TDD workflow.
-- [ ] Start the frontend with `npm start` inside `react-wordle`.
+- [ ] Start the frontend with `npm run dev` inside `react-wordle` (`npm start` works as an alias).
 
 ---
 
@@ -56,7 +56,7 @@ This guide is written for live judging sessions. Follow it to demonstrate the Wo
    - Ensure the relayer config has sensible `cacheMaxEntries` and, if required, `RELAYER_LOG_HTTP_ENDPOINT` for external log shipping.
 2. **Spin up services**
    - Start the relayer (`npm run start`) and confirm `npm run status` reports `status: "idle"` with queue depth 0.
-   - Launch the frontend (`npm start` in `react-wordle`) and clear cached data before recording.
+  - Launch the frontend (`npm run dev` in `react-wordle`) and clear cached data before recording.
 3. **Capture flow**
    - Wallet connect → register → solve puzzle → observe relayer banner (`Relayer minted +X WBOO`) → purchase cosmetic.
    - While recording, briefly show `/healthz` JSON and mention Docker/PM2 deployment options.
@@ -72,7 +72,7 @@ Save the raw screen capture plus a trimmed version for final submission.
 - **No DEV balance**: revisit the Moonbeam faucet. Ensure the wallet network is Moonbase Alpha (chainId 1287).
 - **Registration button stuck**: refresh after the transaction confirms; the UI refetches profile data via React Query.
 - **Contract addresses incorrect**: rerun `npm run export:addresses` and copy the output back into the frontend `.env`.
-- **Tests complaining about `import.meta`**: use `npm test -- --watch=false --testPathPattern=\"(shop|contracts|words).test.ts\"` for the curated suite.
+- **Need a quick smoke test**: use `npm run test:targeted` to cover relayer hooks, navbar feedback, word helpers, and shop utilities without running the full suite.
 
 ---
 

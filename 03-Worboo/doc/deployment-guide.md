@@ -108,15 +108,15 @@ REACT_APP_WORBOO_SHOP=0x...
    REACT_APP_WORBOO_SHOP=0x...
    REACT_APP_RELAYER_HEALTH_URL=http://localhost:8787/healthz
    ```
-3. Review optional feature toggles in `react-wordle/src/config/appConfig.ts`:
-   - Leave `shopDemoMode` as `true` if you are demoing without on-chain balances (purchases will be simulated).
-   - Keep `zkProofsEnabled=false` until the Halo2 proving pipeline is restored—the stats modal will display a “coming soon” notice.
-   - To integrate a custom AI hint service, set `aiAssistant.enabled=true` and provide your `baseUrl`, `model`, and prompt templates (use `{word}` placeholder for the solution).
-   - The toggles above can also be set directly in `.env.local` using keys like `REACT_APP_SHOP_DEMO_MODE`, `REACT_APP_ZK_PROOFS_ENABLED`, and `REACT_APP_ASSISTANT_*`.
+3. Review optional feature toggles in `react-wordle/src/config/app-config.json`:
+   - Leave `"shopDemoMode": true` if you are demoing without on-chain balances (purchases will be simulated).
+   - Keep `"zkProofsEnabled": false` until the Halo2 proving pipeline is restored—the stats modal will display a “coming soon” notice.
+   - Populate `"aiAssistant"` with your hint service URL, model, prompts, and headers if you have an external LLM endpoint (otherwise keep `"enabled": false`).
+   - Environment overrides (`REACT_APP_SHOP_DEMO_MODE`, `REACT_APP_ZK_PROOFS_ENABLED`, `REACT_APP_ASSISTANT_*`) remain available but are optional—the JSON file is the source of truth for rehearsals.
 3. Start the app:
    ```bash
    cd react-wordle
-   npm start
+   npm run dev
    ```
 4. Open `http://localhost:3000`, connect your Moonbase wallet, and click **Register** in the yellow banner to emit `PlayerRegistered`.
 
@@ -225,7 +225,38 @@ PM2 will keep the service alive and restart on crashes. Use `pm2 restart worboo-
 
 ---
 
-## 9. Frontend Verification
+## 9. Launch the Worboo Assistant Backend (Optional)
+
+The assistant service powers hints consumed by the React app. It supports both static responses (great for demos without external dependencies) and proxy mode (forwarding to a real LLM endpoint).
+
+1. Configure the service:
+   ```bash
+   cd packages/assistant
+   cp config/assistant.config.json config/assistant.config.local.json  # optional copy for custom settings
+   ```
+   - `"mode": "static"` returns messages from `staticMessages`.
+   - `"mode": "proxy"` forwards requests to `proxy.url`, applying `proxy.headers`, `bodyTemplate`, and `responsePath` to extract the hint string.
+   - Keep secrets/API keys inside the JSON file; no environment variables are required, but you can point to an external file via `ASSISTANT_CONFIG_PATH`.
+2. Start the backend:
+   ```bash
+   npm run dev
+   ```
+3. Point the frontend at the running service:
+   ```ini
+   # react-wordle/.env.local
+   REACT_APP_ASSISTANT_ENABLED=true
+   REACT_APP_ASSISTANT_URL=http://127.0.0.1:8788/hint
+   ```
+4. Run `npm test --workspace assistant-service` to confirm backend unit tests pass. The Vitest suite covers static mode, proxy mode, and fallback behaviour.
+5. Manual ping (optional):
+   ```bash
+   npm run hint --workspace assistant-service -- --prompt "Preview tomorrow's Worboo word"
+   ```
+6. Health metrics: `curl http://127.0.0.1:8788/healthz` to confirm uptime, request counters, and fallback usage (CORS headers follow your config).
+
+---
+
+## 10. Frontend Verification
 
 - Connect the same wallet in the UI.
 - After registering and winning a puzzle, refresh the shop modal—balance should update once the relayer transaction confirms.
@@ -242,7 +273,7 @@ PM2 will keep the service alive and restart on crashes. Use `pm2 restart worboo-
 
 ---
 
-## 10. Test Commands Recap
+## 11. Test Commands Recap
 
 | Layer | Command |
 | --- | --- |
@@ -251,17 +282,18 @@ PM2 will keep the service alive and restart on crashes. Use `pm2 restart worboo-
 | Contracts – gas report | `REPORT_GAS=true npm run gas` |
 | Contracts – coverage + gas evidence | `npm run report:evidence` (inside `packages/contracts`) |
 | Relayer config | `npm run test` (inside `packages/relayer`) |
-| Frontend targeted suite | `npm test -- --watch=false --testPathPattern="(shop|contracts|words|RelayerStatusBanner|useRelayerNotifications|useWorbooAssistant)"` |
+| Frontend targeted suite | `npm run test:targeted` (inside `react-wordle`) |
+| Frontend JSON report | `npm run test:targeted:report` (inside `react-wordle`) |
 
 ---
 
-## 11. Troubleshooting
+## 12. Troubleshooting
 
 | Issue | Fix |
 | --- | --- |
 | `Error HH8` (network config) | Verify `.env` values, ensure the RPC URL is reachable. |
 | Missing balances | Confirm relayer is running, wallet has `GAME_MASTER_ROLE`, and transaction succeeded on Moonscan. |
-| CRA Jest errors about `import.meta` | Use the provided test pattern (see section 10) instead of running the full legacy suite. |
+| Frontend dev server fails to start | Ensure `npm run dev` is used (Vite). If another process is on port 3000, pass `--port 3100`. |
 | Wallet connection fails | Ensure MetaMask is set to Moonbase Alpha (chainId 1287). |
 
 ---

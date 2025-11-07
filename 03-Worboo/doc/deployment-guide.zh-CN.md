@@ -29,7 +29,7 @@ cd worboo/03-Worboo
 npm install --ignore-scripts         # 根目录安装共享工具（ESLint/Prettier 等）
 npm install --prefix packages/contracts
 npm install --prefix packages/relayer
-npm install --ignore-scripts --prefix react-wordle   # CRA 旧版钩子需禁用
+npm install --ignore-scripts --prefix react-wordle   # 前端使用 Vite/Vitest，同样建议禁用 Husky 钩子
 ```
 
 ---
@@ -73,11 +73,11 @@ npm run export:addresses   # 输出前端可直接粘贴的地址
    REACT_APP_WORBOO_SHOP=0x...
    REACT_APP_RELAYER_HEALTH_URL=http://localhost:8787/healthz   # 本地 relayer 健康检查，可留空
    ```
-2. 可选：在 `react-wordle/src/config/appConfig.ts` 中调整高级开关（如 `shopDemoMode`、`zkProofsEnabled`、`aiAssistant`），用于切换演示模式、关闭/开启 Halo2 证明提示或对接自建 LLM 提示服务（prompt 可使用 `{word}` 占位符）。若希望无需改动代码，也可在 `.env.local` 中配置 `REACT_APP_SHOP_DEMO_MODE`、`REACT_APP_ZK_PROOFS_ENABLED`、`REACT_APP_ASSISTANT_*` 等变量覆盖默认值。
+2. 可选：在 `react-wordle/src/config/app-config.json` 中调整高级开关（如 `shopDemoMode`、`zkProofsEnabled`、`aiAssistant`），用于切换演示模式、关闭/开启 Halo2 证明提示或对接自建 LLM 提示服务（prompt 可使用 `{word}` 占位符）。如需临时覆盖，可在 `.env.local` 中配置 `REACT_APP_SHOP_DEMO_MODE`、`REACT_APP_ZK_PROOFS_ENABLED`、`REACT_APP_ASSISTANT_*` 等变量；但黑客松演示推荐直接维护 JSON 文件。
 2. 启动前端：
    ```powershell
    cd react-wordle
-   npm start
+   npm run dev
    ```
 
 ---
@@ -127,7 +127,35 @@ npm run export:addresses   # 输出前端可直接粘贴的地址
 
 ---
 
-## 6. Docker / PM2 运维（可选）
+## 6. Worboo 助手服务（可选）
+
+Worboo 助手后端为前端提供实时提示，既可返回预置文案，也可代理访问真实 LLM。
+
+1. 配置文件位于 `packages/assistant/config/assistant.config.json`：
+   - `mode: "static"`：直接返回 `staticMessages`，适合离线演示。
+   - `mode: "proxy"`：将请求转发到 `proxy.url`，支持自定义 `headers`（写入 API Key）、`bodyTemplate`（支持 `{{prompt}}`、`{{model}}`、`{{systemPrompt}}`）以及 `responsePath`（从返回 JSON 中提取提示语）。
+   - 可通过 `ASSISTANT_CONFIG_PATH=D:\configs\assistant.config.json` 指向自定义路径，无需使用环境变量存储密钥。
+2. 启动服务：
+   ```powershell
+   cd packages/assistant
+   npm run dev
+   ```
+3. 前端指向该服务：
+   ```ini
+   # react-wordle/.env.local
+   REACT_APP_ASSISTANT_ENABLED=true
+   REACT_APP_ASSISTANT_URL=http://127.0.0.1:8788/hint
+   ```
+4. 运行单元测试确保后端配置正常：`npm test --workspace assistant-service`。Vitest 覆盖静态模式、代理模式以及 fallback 逻辑。
+5. 手动验证（可选）：
+   ```powershell
+   npm run hint --workspace assistant-service -- --prompt "给我一个 Worboo 提示"
+   ```
+6. 健康检查：访问 `curl http://127.0.0.1:8788/healthz` 可查看运行时间、请求次数、fallback 次数等指标（CORS 响应头随配置自动返回）。
+
+---
+
+## 7. Docker / PM2 运维（可选）
 
 ```powershell
 # 构建镜像
@@ -150,18 +178,20 @@ pm2 status
 
 ---
 
-## 7. Demo 前自检
+## 8. Demo 前自检
 
 1. `npm run lint`（根目录）
 2. `npm run test`（packages/contracts）
 3. `npm test`（packages/relayer）
-4. `npm run status` 确认 `queueDepth: 0`
-5. 浏览器连接前端，完成注册、答题、奖励发放与商店购买流程：确认黄色注册条在网络错误时保留提示、Polka ID 侧边栏展示热力图与徽章、统计弹窗出现“查看单词 / 下一题”按钮并提示 ZK 即将回归。
-6. 若计划录制演示，请参考 `doc/demo-playbook.md` 的录像清单
+4. `npm run test:targeted`（react-wordle，Vite/Vitest 前端冒烟套件）
+5. `npm run test:targeted:report`（react-wordle，生成 `reports/frontend-targeted.json` 供提交）
+6. `npm run status` 确认 `queueDepth: 0`
+7. 浏览器连接前端，完成注册、答题、奖励发放与商店购买流程：确认黄色注册条在网络错误时保留提示、Polka ID 侧边栏展示热力图与徽章、统计弹窗出现“查看单词 / 下一题”按钮并提示 ZK 即将回归。
+8. 若计划录制演示，请参考 `doc/demo-playbook.md` 的录像清单
 
 ---
 
-## 8. 附加资源
+## 9. 附加资源
 
 - `README.md`：工程总览、关键命令。
 - `doc/README - polkadot.md`：面向评委的项目说明。

@@ -1,5 +1,13 @@
 # Worboo Polkadot Hackathon Implementation Plan
 
+> Last refreshed: 2025-11-06
+
+## Status Update (2025-11-06)
+- ✅ Contracts, relayer, and frontend form an end-to-end Moonbase demo: Ignition deploy + `npm run leaderboard` snapshots, relayer health/queue telemetry, and stats modal + assistant fallback in production docs.
+- ✅ CI (`.github/workflows/ci.yml`) now runs lint, contracts Hardhat suites, relayer Vitest, and the targeted frontend Vitest suite; docs, deployment guides, and AI assistant notes align with the current stack.
+- 📌 Still pending for hackathon polish: publish coverage/gas artifacts from CI, stand up the hosted assistant backend, and scaffold the Subsquid/SubQuery indexer referenced in `packages/indexer/`.
+- 🚧 Upcoming focus: expand frontend coverage/E2E rehearsals under Vitest, harden security (pausable controls, multi-sig admin), and re-enable Halo2 proofs when the backend returns.
+
 ## Milestone 0 – Environment Setup (Day 0)
 - [x] Initialize `packages/contracts` Hardhat workspace (TypeScript).
 - [x] Install OpenZeppelin/contracts, hardhat-toolbox, dotenv, @nomicfoundation/hardhat-ignition.
@@ -39,13 +47,13 @@
 ## Milestone 6 – Quality Gates (Day 5–6)
 - [x] Capture contract gas snapshot + coverage report (`forge coverage`, `npx hardhat coverage`).
 - [x] Wire relayer tests into CI (vitest) and document command in README.
-- [ ] Audit frontend test commands, modernise Jest/Vitest config once CRA migration begins.
+- [x] Complete the Vite/Vitest migration for `react-wordle`, script a targeted suite (`npm run test:targeted`), and update documentation.
 
 ## Optional Stretch
 - [ ] Simple Subsquid/SubQuery indexer for leaderboards.
 - [x] Off-chain relayer prototype for auto minting rewards.
 - [ ] UI polish for wallet onboarding (Talisman/Polkadot{.js} support).
-- [ ] React/Vite migration to retire legacy CRA tooling.
+- [x] React/Vite migration to retire legacy CRA tooling.
 
 ## Milestone 7 – Frontend Polish v2 (Day 6–7)
 - [x] Refine stats modal with daily progress, share CTA, next-word flow, and ZK “coming soon” messaging.
@@ -58,6 +66,7 @@
 - [x] Document artifact retrieval and test commands across README, deployment guide, and handoff notes.
 
 ## Milestone 9 – AI Assistant Backend (Next)
-- [ ] Stand up a lightweight hint service (serverless or container) returning `{ message: string }`.
+- [x] Stand up a lightweight hint service (config-driven backend under `packages/assistant`) returning `{ message: string }`.
 - [ ] Secure the endpoint (API key/JWT) and extend `useWorbooAssistant` to send auth headers.
 - [ ] Add integration tests or mocks to validate end-to-end hint delivery.
+- [x] Provide a Hardhat script (`npm run leaderboard`) that aggregates `GameRecorded` events into a JSON snapshot for demos/analytics.

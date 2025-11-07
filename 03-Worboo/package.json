@@ -2,6 +2,7 @@
   "name": "worboo-monorepo",
   "private": true,
   "workspaces": [
+    "packages/assistant",
     "packages/contracts",
     "packages/relayer",
     "react-wordle"

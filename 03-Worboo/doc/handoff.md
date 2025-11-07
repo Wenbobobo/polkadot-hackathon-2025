@@ -1,27 +1,28 @@
-# Worboo Handoff Notes (2025-10-27)
+# Worboo Handoff Notes (2025-11-06)
 
 ## Current Snapshot
 
-- **Contracts**: `WorbooRegistry`, `WorbooToken`, `WorbooShop` deployed via Ignition module with roles wired (`packages/contracts/ignition/modules/WorbooModule.ts`). Gas + coverage baselines captured and referenced in the testing matrix.
-- **Frontend**: React app connects to Moonbase Alpha, shows deterministic Polka IDs + activity heatmaps in the profile sidebar, exposes friend search with shareable IDs, surfaces relayer health, and routes the new stats modal (daily progress, share CTA, next-word) through `useWorbooAssistant` fallbacks.
-- **Relayer**: `packages/relayer` watches `GameRecorded`, persists processed hashes, exposes `/healthz` + `npm run status`, rotates structured JSON logs, and passes the Hardhat-backed integration replay.
-- **CI/CD**: `.github/workflows/ci.yml` runs lint, contracts tests, relayer vitest, and targeted CRA suites on every push/PR (Husky disabled for automation safety).
-- **Docs**: README, deployment guides (EN + 中文), observability notes, roadmap, and hackathon collateral refreshed for the Moonbase relayer workflow.
+- **Contracts**: `WorbooRegistry`, `WorbooToken`, `WorbooShop` deployed via Ignition (`packages/contracts/ignition/modules/WorbooModule.ts`) with role helpers (`scripts/grantGameMaster.ts`). Latest coverage + gas baselines produced through `npm run report:evidence`, and the new leaderboard generator (`npm run leaderboard`) snapshots on-chain performance for demos.
+- **Frontend**: React app targets Moonbase Alpha, renders deterministic Polka IDs, activity heatmaps, badge gallery, friend search, relayer health banner, refreshed stats modal, and the `useWorbooAssistant` hook with configurable production endpoints. The build now runs on Vite/Vitest with a scripted targeted suite.
+- **Relayer**: `packages/relayer` streams `GameRecorded`, dedupes & persists hashes, retries mint failures, serves `/healthz`, exposes `npm run status`, and emits rotated JSONL logs. Hardhat-backed integration replay remains green.
+- **Assistant service**: `packages/assistant` ships a JSON-configured backend with static + proxy modes (plus `/healthz` metrics for dashboards), letting demos run offline or forward to a hosted LLM via `proxy.url`.
+- **CI/CD**: `.github/workflows/ci.yml` executes lint, contracts tests (incl. coverage trigger), relayer Vitest, and the targeted frontend Vitest suite, surfacing failing artefacts while skipping Husky in automation contexts.
+- **Docs**: README, deployment guides (EN/中文), observability playbook, roadmap, AI assistant notes, and testing matrix all reflect the Moonbase flow and relayer/leaderboard tooling as of this update.
 
 ## Gaps Before “Full Flow” Demo
 
-1. **CI artifacts** – workflow runs tests but skips publishing coverage/gas snapshots; judges will expect LCOV and gas reports attached to releases.
-2. **Indexer/leaderboard** – gameplay history is still read live from the contracts. Subsquid/SubQuery (or The Graph) will unlock streak leaderboards and analytics.
-3. **ZK proof integration** – the Halo2 proof-of-play pipeline remains out of band; stats modal advertises the roadmap until the IPFS attestation flow returns.
-4. **Security hardening** – expand beyond role gating (timelocks, multisig admin, pause playbooks) before mainnet.
-5. **Frontend modernization** – CRA toolchain persists; Vite/Vitest migration will simplify tests and reduce build flake.
-6. **Assistant backend** – `useWorbooAssistant` is ready for a configurable LLM endpoint once an inference service is provisioned.
+1. **Coverage & gas artifacts** – CI runs the suites but still needs to archive LCOV + gas outputs for judges (`packages/contracts/build/reports/**`).
+2. **Indexer/leaderboard service** – gameplay history is read live from contracts; bootstrap Subsquid/SubQuery (see `packages/indexer/README.md`) to unlock streak analytics.
+3. **Assistant backend** – `useWorbooAssistant` ships with config scaffolding; wire a hosted LLM/hint API and extend tests to cover authenticated requests.
+4. **ZK proof integration** – Halo2 pipeline remains staged; stats modal keeps the “coming soon” copy until off-chain verification returns.
+5. **Security hardening** – beyond role gating, add pausable controls, multi-sig admin paths, and relayer cache recovery drills pre-mainnet.
+6. **Frontend coverage expansion** – extend Vitest/RTL beyond the targeted suite (shop purchases, profile sidebar) and consider end-to-end smoke tests once Moonbase rehearsals stabilise.
 
 ## Focus for Next Contributors
 
-- **Short term**: export coverage + gas artifacts from CI, document how to share them with judges, and script cache purges/recovery drills for the relayer.
-- **Medium term**: ship the indexed leaderboard service, plug a hosted LLM endpoint into `useWorbooAssistant`, feed relayer `/healthz` data into Grafana/Prometheus, and formalize on-call runbooks.
-- **Long term**: merge Halo2 proof validation (flip `zkProofsEnabled`), experiment with PVM/ink! sidecar pallets, and design governance/economic levers for community seasons.
+- **Short term**: archive coverage/gas artifacts in CI, validate Moonbase rehearsal using the leaderboard snapshot + relayer health, and document recovery drills plus cache reset steps.
+- **Medium term**: deliver the indexed leaderboard, integrate the hosted assistant API (include auth header configuration), feed `/healthz` metrics into Grafana/Prometheus, and flesh out on-call runbooks.
+- **Long term**: reinstate Halo2 proof validation (`zkProofsEnabled`), explore PVM/ink! companions, and evolve governance/economic loops for seasonal play.
 
 ## Reference Commands
 
@@ -36,7 +37,9 @@
 | Docker build | docker build -f packages/relayer/Dockerfile -t worboo-relayer . |
 | Docker run | docker run --rm -p 8787:8787 -v D:\zWenbo\AI\Hackthon\polkadot-hackathon-2025\03-Worboo/packages/relayer/config:/app/packages/relayer/config -e RELAYER_CONFIG_PATH=/app/packages/relayer/config/relayer.config.json worboo-relayer |
 | PM2 (optional) | pm2 start packages/relayer/ecosystem.config.cjs |
-| Frontend tests | `npm test -- --watch=false --testPathPattern="(shop|contracts|words|RelayerStatusBanner|useRelayerNotifications|useWorbooAssistant)"` |
+| Frontend tests | `npm run test:targeted` (react-wordle) |
+| Frontend report | `npm run test:targeted:report` (react-wordle) |
+| Leaderboard snapshot | `npm run leaderboard -- --registry=0x... --limit=10` (packages/contracts) |
 
 ## Contacts / Notes
 
@@ -46,6 +49,10 @@
 - For production: consider swapping to Moonbeam RPCs and revisiting gas estimates (Moonbase uses 1 gwei baseline).
 
 Continue iterating, and log major decisions back into this document or the roadmap so future teammates stay aligned. Good luck! 🟩🟨⬛
+
+---
+
+_Last updated: 2025-11-06 (post-doc review + leaderboard tooling refresh)._
 
 
 
