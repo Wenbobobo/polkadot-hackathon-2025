@@ -6,6 +6,7 @@
 - **Frontend**: React app targets Moonbase Alpha, renders deterministic Polka IDs, activity heatmaps, badge gallery, friend search, relayer health banner, refreshed stats modal, and the `useWorbooAssistant` hook with configurable production endpoints. The build now runs on Vite/Vitest with a scripted targeted suite.
 - **Relayer**: `packages/relayer` streams `GameRecorded`, dedupes & persists hashes, retries mint failures, serves `/healthz`, exposes `npm run status`, and emits rotated JSONL logs. Hardhat-backed integration replay remains green.
 - **Assistant service**: `packages/assistant` ships a JSON-configured backend with static + proxy modes (plus `/healthz` metrics for dashboards), letting demos run offline or forward to a hosted LLM via `proxy.url`.
+- **Leaderboard indexer**: `packages/indexer` tails `GameRecorded` events via `ethers6`, writes snapshots to `cache/leaderboard.json`, and exposes `/leaderboard`, `/players/:address`, and `/healthz` under `npm start`.
 - **CI/CD**: `.github/workflows/ci.yml` executes lint, contracts tests (incl. coverage trigger), relayer Vitest, and the targeted frontend Vitest suite, surfacing failing artefacts while skipping Husky in automation contexts.
 - **Docs**: README, deployment guides (EN/中文), observability playbook, roadmap, AI assistant notes, and testing matrix all reflect the Moonbase flow and relayer/leaderboard tooling as of this update.
 
@@ -53,6 +54,11 @@ Continue iterating, and log major decisions back into this document or the roadm
 ---
 
 _Last updated: 2025-11-06 (post-doc review + leaderboard tooling refresh)._
+
+### Notes for the next contributor
+- Bump Node to ≥22.12.0 when time allows so we can move the frontend to Vitest 4.x and silence the new engine warnings.
+- Plug a real LLM endpoint into `packages/assistant` (provide `ASSISTANT_API_KEY`, update `secretHeaders`) and capture an end-to-end Moonbase rehearsal log for the demo deck.
+- Keep the temporary leaderboard API online for upcoming demos, but start the Subsquid/SubQuery migration early so the graph is production-ready before finals.
 
 
 

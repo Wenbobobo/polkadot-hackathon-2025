@@ -3,10 +3,10 @@
 > Last refreshed: 2025-11-06
 
 ## Status Update (2025-11-06)
-- ✅ Contracts, relayer, and frontend form an end-to-end Moonbase demo: Ignition deploy + `npm run leaderboard` snapshots, relayer health/queue telemetry, and stats modal + assistant fallback in production docs.
-- ✅ CI (`.github/workflows/ci.yml`) now runs lint, contracts Hardhat suites, relayer Vitest, and the targeted frontend Vitest suite; docs, deployment guides, and AI assistant notes align with the current stack.
-- 📌 Still pending for hackathon polish: publish coverage/gas artifacts from CI, stand up the hosted assistant backend, and scaffold the Subsquid/SubQuery indexer referenced in `packages/indexer/`.
-- 🚧 Upcoming focus: expand frontend coverage/E2E rehearsals under Vitest, harden security (pausable controls, multi-sig admin), and re-enable Halo2 proofs when the backend returns.
+- ✅ Contracts, relayer, assistant, leaderboard API, and frontend now form an end-to-end Moonbase demo: Ignition deploy + `npm run leaderboard` snapshots, relayer/assistant `/healthz`, targeted React Vitest suite, and the new `packages/indexer` HTTP service.
+- ✅ CI (`.github/workflows/ci.yml`) runs lint, contracts Hardhat suites, relayer Vitest, targeted frontend Vitest, and uploads both contract and frontend evidence artifacts.
+- 📌 Still pending for hackathon polish: swap in the real LLM endpoint (env-driven secrets), migrate the temporary leaderboard to Subsquid/SubQuery, and resolve remaining dependency advisories (wagmi/viem/ws + Hardhat stack).
+- 🚧 Upcoming focus: expand frontend coverage/E2E rehearsals, harden security (pausable controls, multi-sig admin), and re-enable Halo2 proofs when the backend returns.
 
 ## Milestone 0 – Environment Setup (Day 0)
 - [x] Initialize `packages/contracts` Hardhat workspace (TypeScript).
@@ -50,7 +50,7 @@
 - [x] Complete the Vite/Vitest migration for `react-wordle`, script a targeted suite (`npm run test:targeted`), and update documentation.
 
 ## Optional Stretch
-- [ ] Simple Subsquid/SubQuery indexer for leaderboards.
+- [x] Simple leaderboard indexer/API (temporary Node service until Subsquid/SubQuery migration).
 - [x] Off-chain relayer prototype for auto minting rewards.
 - [ ] UI polish for wallet onboarding (Talisman/Polkadot{.js} support).
 - [x] React/Vite migration to retire legacy CRA tooling.

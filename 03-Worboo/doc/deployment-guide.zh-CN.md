@@ -156,7 +156,27 @@ Worboo 助手后端为前端提供实时提示，既可返回预置文案，也�
 
 ---
 
-## 7. Docker / PM2 运维（可选）
+## 7. Worboo 排行索引服务（可选）
+
+```powershell
+cd packages/indexer
+cp config/indexer.config.json config/indexer.config.local.json
+$env:WORBOO_INDEXER_REGISTRY="0xYourRegistry"; npm start
+```
+
+- `GET /leaderboard?limit=10`：按连胜 > 胜场 > 最近活动排序。
+- `GET /players/:address`：查询单个玩家。
+- `GET /healthz`：返回使用的 RPC、合约等信息。
+
+导出静态 JSON？
+
+```powershell
+$env:WORBOO_INDEXER_REGISTRY="0xYourRegistry"; npm run snapshot --workspace packages/indexer > leaderboard.json
+```
+
+---
+
+## 8. Docker / PM2 运维（可选）
 
 ```powershell
 # 构建镜像
@@ -179,7 +199,7 @@ pm2 status
 
 ---
 
-## 8. Demo 前自检
+## 9. Demo 前自检
 
 1. `npm run lint`（根目录）
 2. `npm run test`（packages/contracts）
@@ -192,7 +212,7 @@ pm2 status
 
 ---
 
-## 9. 附加资源
+## 10. 附加资源
 
 - `README.md`：工程总览、关键命令。
 - `doc/README - polkadot.md`：面向评委的项目说明。

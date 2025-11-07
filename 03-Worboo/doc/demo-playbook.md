@@ -61,7 +61,8 @@ This guide is written for live judging sessions. Follow it to demonstrate the Wo
    - Wallet connect → register → solve puzzle → observe relayer banner (`Relayer minted +X WBOO`) → purchase cosmetic.
    - While recording, briefly show `/healthz` JSON and mention Docker/PM2 deployment options.
 4. **Closing narration**
-   - Point to documentation (`README.md`, deployment guide, handoff) and mention the indexer scaffold (`packages/indexer/README.md`) for roadmap continuity.
+   - Hit `http://localhost:8789/leaderboard` (if the indexer is running) to showcase aggregated streaks and mention the snapshot command for judges.
+   - Point to documentation (`README.md`, deployment guide, handoff) for runbooks + roadmap continuity.
 
 Save the raw screen capture plus a trimmed version for final submission.
 

@@ -257,7 +257,27 @@ The assistant service powers hints consumed by the React app. It supports both s
 
 ---
 
-## 10. Frontend Verification
+## 10. Launch the Leaderboard Indexer (Optional)
+
+```bash
+cd packages/indexer
+cp config/indexer.config.json config/indexer.config.local.json
+WORBOO_INDEXER_REGISTRY=0xYourRegistryAddress npm start
+```
+
+- `GET /leaderboard?limit=10` – sorted by streak → wins → recency.
+- `GET /players/:address` – per-player stats.
+- `GET /healthz` – registry/RPC info.
+
+To capture a static artifact for judges:
+
+```bash
+WORBOO_INDEXER_REGISTRY=0xYourRegistryAddress npm run snapshot --workspace packages/indexer > leaderboard.json
+```
+
+---
+
+## 11. Frontend Verification
 
 - Connect the same wallet in the UI.
 - After registering and winning a puzzle, refresh the shop modal—balance should update once the relayer transaction confirms.
@@ -274,7 +294,7 @@ The assistant service powers hints consumed by the React app. It supports both s
 
 ---
 
-## 11. Test Commands Recap
+## 12. Test Commands Recap
 
 | Layer | Command |
 | --- | --- |
@@ -288,7 +308,7 @@ The assistant service powers hints consumed by the React app. It supports both s
 
 ---
 
-## 12. Troubleshooting
+## 13. Troubleshooting
 
 | Issue | Fix |
 | --- | --- |

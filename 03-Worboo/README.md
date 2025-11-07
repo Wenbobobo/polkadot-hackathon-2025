@@ -81,6 +81,7 @@ sequenceDiagram
 | --- | --- |
 | `packages/contracts/` | Hardhat workspace (contracts, tests, Ignition deployment module, TypeChain outputs). |
 | `packages/assistant/` | Configurable Worboo assistant backend (static fallback or proxy to a real LLM). |
+| `packages/indexer/` | Lightweight leaderboard indexer/API that tails `GameRecorded` events and exposes `/leaderboard`. |
 | `react-wordle/` | Frontend app with wallet connectivity, Moonbase integration, and UI for the Worboo shop. |
 | `doc/` | Hackathon collateral: architecture notes, migration research, implementation plan, and onboarding docs. |
 
@@ -163,6 +164,25 @@ npm run mock:assistant -- --port 8788 --delay 50
 ```
 
 Then set `REACT_APP_ASSISTANT_ENABLED=true` and `REACT_APP_ASSISTANT_URL=http://127.0.0.1:8788`.
+
+Call `http://localhost:8788/healthz` (configurable) to inspect assistant uptime, request counters, and fallback usage—ideal for dashboards alongside the relayer.
+> Tip: keep API keys out of git by exporting env vars (e.g., `ASSISTANT_API_KEY=...`) and referencing them via the `secretHeaders` array in `assistant.config.json`.
+
+#### Leaderboard indexer (optional)
+
+```bash
+cd packages/indexer
+cp config/indexer.config.json config/indexer.config.local.json  # update registry address + fromBlock
+WORBOO_INDEXER_REGISTRY=0xYourRegistryAddress npm start
+```
+
+This lightweight service streams `GameRecorded` events, persists them to `cache/leaderboard.json`, and exposes:
+
+- `GET /leaderboard?limit=10`
+- `GET /players/:address`
+- `GET /healthz`
+
+Need a JSON artifact for judges? Run `WORBOO_INDEXER_REGISTRY=0x... npm run snapshot --workspace packages/indexer > leaderboard.json`.
 
 ### 4. Compile & test contracts
 

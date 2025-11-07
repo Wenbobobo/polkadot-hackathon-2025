@@ -70,6 +70,7 @@ See [`mvp-architecture.md`](mvp-architecture.md) for detailed data flow diagrams
    - Generate JSON artifact: `react-wordle/npm run test:targeted:report` (writes to `react-wordle/reports/frontend-targeted.json`).
    - Relayer: `packages/relayer/npm test`.
    - Relayer health snapshot: `packages/relayer/npm run status` (or `curl http://localhost:8787/healthz`).
+   - Leaderboard indexer: `packages/indexer/npm run snapshot` (one-off JSON) or `npm start` to expose `/leaderboard`.
 
 > **Note:** Vite/Vitest is now the default frontend toolchain. Use the targeted script above for smoke tests across relayer hooks, navbar banners, and shop utilities.
 
@@ -86,7 +87,7 @@ See [`mvp-architecture.md`](mvp-architecture.md) for detailed data flow diagrams
 - [ ] (Optional) Relayer running — mint transactions observed after `GameRecorded` events.
 
 Optional extras (stretch goals):
-- [ ] Leaderboard / relayer integration (planned but not in MVP).
+- [ ] Leaderboard API running (`packages/indexer` HTTP service) and wired into dashboards.
 - [ ] ZK proof submission (present in repo, disabled by default).
 
 ---

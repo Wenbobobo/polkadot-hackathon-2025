@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useProvider, useSigner } from 'wagmi'
-import { Contract } from 'ethers'
+import { Contract } from 'ethers6'
 
 import {
   getContractsConfig,
