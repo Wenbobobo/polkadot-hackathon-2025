@@ -1,0 +1,38 @@
+{
+  "server": {
+    "host": "127.0.0.1",
+    "port": 8788,
+    "cors": {
+      "enabled": true,
+      "origin": "*",
+      "allowHeaders": ["Content-Type", "Authorization", "X-Requested-With"],
+      "allowMethods": ["POST", "OPTIONS"]
+    }
+  },
+  "assistant": {
+    "mode": "static",
+    "systemPrompt": "You are Worboo, a friendly Polkadot tutor.",
+    "staticMessages": [
+      "Think parachains, not parachutes!",
+      "Focus on relay chains and dots will align.",
+      "Moonbase explorers know this word—channel your inner builder."
+    ],
+    "proxy": {
+      "url": "https://api.example.com/v1/chat/completions",
+      "method": "POST",
+      "headers": {
+        "Authorization": "Bearer replace-me",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "model": "{{model}}",
+        "messages": [
+          { "role": "system", "content": "{{systemPrompt}}" },
+          { "role": "user", "content": "{{prompt}}" }
+        ]
+      },
+      "responsePath": ["choices", 0, "message", "content"],
+      "timeoutMs": 10000
+    }
+  }
+}
