@@ -1,13 +1,14 @@
 import { act, render, screen } from '@testing-library/react'
 import React from 'react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { useRelayerHealth } from '../useRelayerHealth'
 
 const mockFetch = (response: any, ok = true) => {
-  global.fetch = jest.fn().mockResolvedValue({
+  global.fetch = vi.fn().mockResolvedValue({
     ok,
     status: ok ? 200 : 500,
-    json: jest.fn().mockResolvedValue(response),
+    json: vi.fn().mockResolvedValue(response),
   }) as unknown as typeof fetch
 }
 
@@ -24,7 +25,7 @@ const TestComponent = ({ url, enabled }: { url?: string; enabled?: boolean }) =>
 
 describe('useRelayerHealth', () => {
   beforeEach(() => {
-    jest.useFakeTimers()
+    vi.useFakeTimers()
     mockFetch({
       status: 'idle',
       queueDepth: 0,
@@ -35,8 +36,8 @@ describe('useRelayerHealth', () => {
   })
 
   afterEach(() => {
-    jest.useRealTimers()
-    jest.resetAllMocks()
+    vi.useRealTimers()
+    vi.resetAllMocks()
     // @ts-expect-error cleanup in test env
     delete global.fetch
   })
@@ -45,7 +46,7 @@ describe('useRelayerHealth', () => {
     render(<TestComponent url="http://test" />)
 
     await act(async () => {
-      await jest.advanceTimersByTime(0)
+      await vi.advanceTimersByTimeAsync(0)
     })
 
     expect(global.fetch).toHaveBeenCalledTimes(1)
@@ -53,7 +54,7 @@ describe('useRelayerHealth', () => {
     expect(screen.getByTestId('queue').textContent).toBe('0')
 
     await act(async () => {
-      await jest.advanceTimersByTime(15_000)
+      await vi.advanceTimersByTimeAsync(15_000)
     })
 
     expect(global.fetch).toHaveBeenCalledTimes(2)
@@ -65,7 +66,7 @@ describe('useRelayerHealth', () => {
     render(<TestComponent url="http://test" />)
 
     await act(async () => {
-      await jest.advanceTimersByTime(0)
+      await vi.advanceTimersByTimeAsync(0)
     })
 
     expect(screen.getByTestId('error')).toBeInTheDocument()
@@ -75,7 +76,7 @@ describe('useRelayerHealth', () => {
     render(<TestComponent url="http://test" enabled={false} />)
 
     await act(async () => {
-      await jest.advanceTimersByTime(20_000)
+      await vi.advanceTimersByTimeAsync(20_000)
     })
 
     expect(global.fetch).not.toHaveBeenCalled()

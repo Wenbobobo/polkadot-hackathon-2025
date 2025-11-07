@@ -1,4 +1,9 @@
-export const GAME_TITLE = process.env.REACT_APP_GAME_NAME!
+const DEFAULT_GAME_TITLE = 'Worboo'
+const DEFAULT_GAME_DESCRIPTION = 'Learn daily words with Worboo on Polkadot.'
+
+export const GAME_TITLE = process.env.REACT_APP_GAME_NAME ?? DEFAULT_GAME_TITLE
+export const GAME_DESCRIPTION =
+  process.env.REACT_APP_GAME_DESCRIPTION ?? DEFAULT_GAME_DESCRIPTION
 
 export const WIN_MESSAGES = ['Great Job!', 'Awesome', 'Well done!']
 export const GAME_COPIED_MESSAGE = 'Game copied to clipboard'

@@ -1,10 +1,10 @@
 import { EventEmitter } from 'events'
 import { act, render } from '@testing-library/react'
 import React, { useEffect } from 'react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import type { Contract } from 'ethers'
 
-import { useRelayerNotifications } from '../useRelayerNotifications'
-
-jest.mock('ethers', () => ({
+vi.mock('ethers', () => ({
   constants: {
     AddressZero: '0x0000000000000000000000000000000000000000',
   },
@@ -13,8 +13,8 @@ jest.mock('ethers', () => ({
   },
 }))
 
-jest.mock('../../services/contracts', () => ({
-  useWorbooContracts: jest.fn(() => ({
+vi.mock('../../services/contracts', () => ({
+  useWorbooContracts: vi.fn(() => ({
     registry: null,
     registryWrite: null,
     token: null,
@@ -25,16 +25,18 @@ jest.mock('../../services/contracts', () => ({
   })),
 }))
 
-jest.mock('wagmi', () => ({
+vi.mock('wagmi', () => ({
   useAccount: () => ({
     address: '0xPlayer',
     isConnected: true,
   }),
 }))
 
-const {
-  constants: { AddressZero: ZeroAddress },
-} = require('ethers') as { constants: { AddressZero: string } }
+import { useRelayerNotifications } from '../useRelayerNotifications'
+import { useWorbooContracts } from '../../services/contracts'
+
+const ZeroAddress = '0x0000000000000000000000000000000000000000'
+const mockedUseWorbooContracts = vi.mocked(useWorbooContracts)
 
 class MockContract extends EventEmitter {
   on(event: string, listener: (...args: any[]) => void): this {
@@ -49,20 +51,17 @@ class MockContract extends EventEmitter {
 }
 
 describe('useRelayerNotifications', () => {
-  const registry = new MockContract()
-  const token = new MockContract()
-  const refreshMock = jest.fn()
+const registry = new MockContract() as unknown as Contract
+const token = new MockContract() as unknown as Contract
+  const refreshMock = vi.fn()
 
   beforeEach(() => {
-    jest.useFakeTimers()
+    vi.useFakeTimers()
     registry.removeAllListeners()
     token.removeAllListeners()
     refreshMock.mockReset()
 
-    const { useWorbooContracts } = require('../../services/contracts') as {
-      useWorbooContracts: jest.Mock
-    }
-    useWorbooContracts.mockReturnValue({
+    mockedUseWorbooContracts.mockReturnValue({
       registry,
       registryWrite: null,
       token,
@@ -74,8 +73,8 @@ describe('useRelayerNotifications', () => {
   })
 
   afterEach(() => {
-    jest.clearAllMocks()
-    jest.useRealTimers()
+    vi.clearAllMocks()
+    vi.useRealTimers()
   })
 
   const renderHook = () => {
@@ -150,7 +149,7 @@ describe('useRelayerNotifications', () => {
     })
 
     await act(async () => {
-      jest.advanceTimersByTime(45_000)
+      await vi.advanceTimersByTimeAsync(45_000)
     })
 
     const latest = values.at(-1)

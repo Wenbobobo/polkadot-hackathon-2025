@@ -5,6 +5,7 @@ import { MAX_CHALLENGES } from '../constants/settings'
 import { UAParser } from 'ua-parser-js'
 import { wrap } from 'comlink'
 import { postToIpfs } from './ipfs'
+import HaloWorker from './halo-worker?worker'
 
 const webShareApiDeviceTypes: string[] = ['mobile', 'smarttv', 'wearable']
 const parser = new UAParser()
@@ -74,9 +75,8 @@ export const generateProof = async (
     return undefined
   }
 
-  const worker = new Worker(new URL('./halo-worker', import.meta.url), {
+  const worker = new HaloWorker({
     name: 'halo-worker',
-    type: 'module',
   })
   const workerApi = wrap<import('./halo-worker').HaloWorker>(worker)
 
@@ -103,9 +103,8 @@ export const verifyProof = async (
   proof: number[]
 ) => {
   solution = solution.toLowerCase()
-  const worker = new Worker(new URL('./halo-worker', import.meta.url), {
+  const worker = new HaloWorker({
     name: 'halo-worker-verify',
-    type: 'module',
   })
   const workerApi = wrap<import('./halo-worker').HaloWorker>(worker)
 

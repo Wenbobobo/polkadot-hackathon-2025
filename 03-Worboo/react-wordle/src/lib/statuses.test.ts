@@ -1,14 +1,20 @@
+import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { getGuessStatuses } from './statuses'
 
-const mockSolutionGetter = jest.fn()
+const mockSolutionGetter = vi.fn()
 
-beforeEach(() => {
-  jest.mock('./words', () => ({
-    ...jest.requireActual('./words'),
+vi.mock('./words', async () => {
+  const actual = await vi.importActual<typeof import('./words')>('./words')
+  return {
+    ...actual,
     get solution() {
       return mockSolutionGetter()
     },
-  }))
+  }
+})
+
+beforeEach(() => {
+  mockSolutionGetter.mockReset()
 })
 
 describe('getGuessStatuses', () => {

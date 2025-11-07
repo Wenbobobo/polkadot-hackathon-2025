@@ -1,0 +1,18 @@
+{
+  "network": {
+    "requiredChainId": 1287,
+    "name": "Moonbase Alpha"
+  },
+  "features": {
+    "shopDemoMode": true,
+    "zkProofsEnabled": false,
+    "aiAssistant": {
+      "enabled": false,
+      "baseUrl": "",
+      "model": "",
+      "promptFirstAttempt": "You are Worboo, a playful teacher helping learners guess the word \"{word}\". Offer a gentle hint without revealing the answer.",
+      "promptRetry": "You are Worboo, an encouraging assistant. The correct word is \"{word}\". Give a firmer hint but keep the experience fun.",
+      "headers": {}
+    }
+  }
+}

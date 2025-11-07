@@ -18,6 +18,9 @@ import {
   FRIEND_LIST_TITLE,
   FRIEND_PROFILE_CHALLENGE_BUTTON,
   FRIEND_PROFILE_LEVEL,
+  FRIEND_PROFILE_OCID,
+  FRIEND_PROFILE_COPY_OCID,
+  FRIEND_PROFILE_COPIED_OCID,
 } from '../../constants/strings'
 import { derivePolkaId, formatAddress, copyToClipboard } from '../../utils/polkaId'
 import type { WorbooFriend } from '../../types/friend'

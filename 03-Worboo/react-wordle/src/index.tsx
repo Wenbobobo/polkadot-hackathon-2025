@@ -1,5 +1,5 @@
 import React from 'react'
-import ReactDOM from 'react-dom'
+import ReactDOM from 'react-dom/client'
 import './index.css'
 import reportWebVitals from './reportWebVitals'
 import { AlertProvider } from './context/AlertContext'
@@ -12,10 +12,20 @@ import { RainbowKitProvider, darkTheme } from '@rainbow-me/rainbowkit'
 import { WagmiConfig } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { config, chains } from './lib/wagmi'
+import { GAME_TITLE } from './constants/strings'
 
 const queryClient = new QueryClient()
+const container = document.getElementById('root')
 
-ReactDOM.render(
+if (!container) {
+  throw new Error('Failed to find root element')
+}
+
+document.title = GAME_TITLE ?? 'Worboo'
+
+const root = ReactDOM.createRoot(container)
+
+root.render(
   <React.StrictMode>
     <WagmiConfig client={config}>
       <QueryClientProvider client={queryClient}>
@@ -31,11 +41,8 @@ ReactDOM.render(
         </RainbowKitProvider>
       </QueryClientProvider>
     </WagmiConfig>
-  </React.StrictMode>,
-  document.getElementById('root')
+  </React.StrictMode>
 )
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
+reportWebVitals()
 reportWebVitals()

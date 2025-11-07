@@ -11,9 +11,24 @@ This is a clone project of the popular word guessing game we all know and love. 
 Clone the repository and perform the following command line actions:
 
 ```bash
-$> cd react-wordle
-$> npm install
-$> npm run start
+cd react-wordle
+npm install
+npm run dev
+```
+
+> `npm start` remains available as an alias. Pass `--host 0.0.0.0 --port 3000` after the dev command to expose over LAN.
+
+### Tests (targeted smoke suite)
+
+```bash
+npm run test:targeted
+```
+
+### Full suite / watch mode
+
+```bash
+npm test         # one-off run
+npm run test:watch
 ```
 
 ### To build/run docker container:

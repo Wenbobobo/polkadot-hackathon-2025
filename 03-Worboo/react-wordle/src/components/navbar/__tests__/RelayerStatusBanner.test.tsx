@@ -1,11 +1,12 @@
-import { render, screen, fireEvent } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import React from 'react'
+import { describe, expect, it, vi } from 'vitest'
 
 import { RelayerStatusBanner } from '../RelayerStatusBanner'
 
 describe('RelayerStatusBanner', () => {
   it('renders success notifications with amount and dismiss control', () => {
-    const onDismiss = jest.fn()
+    const onDismiss = vi.fn()
     render(
       <RelayerStatusBanner
         notification={{
@@ -35,7 +36,7 @@ describe('RelayerStatusBanner', () => {
             'Reward pending—your submission is awaiting relayer confirmation.',
         }}
         pendingRewards={2}
-        onDismiss={jest.fn()}
+        onDismiss={vi.fn()}
       />
     )
 
@@ -52,7 +53,7 @@ describe('RelayerStatusBanner', () => {
       <RelayerStatusBanner
         notification={null}
         pendingRewards={0}
-        onDismiss={jest.fn()}
+        onDismiss={vi.fn()}
       />
     )
 
@@ -64,7 +65,7 @@ describe('RelayerStatusBanner', () => {
       <RelayerStatusBanner
         notification={null}
         pendingRewards={0}
-        onDismiss={jest.fn()}
+        onDismiss={vi.fn()}
         health={{
           status: 'processing',
           queueDepth: 2,
@@ -76,7 +77,9 @@ describe('RelayerStatusBanner', () => {
       />
     )
 
-    expect(screen.getByText(/Relayer is processing submissions./i)).toBeInTheDocument()
+    expect(
+      screen.getByText(/Relayer is processing submissions./i)
+    ).toBeInTheDocument()
     expect(screen.getByText(/Status: processing/i)).toBeInTheDocument()
     expect(screen.getByText(/Queue: 2/i)).toBeInTheDocument()
   })
@@ -86,7 +89,7 @@ describe('RelayerStatusBanner', () => {
       <RelayerStatusBanner
         notification={null}
         pendingRewards={0}
-        onDismiss={jest.fn()}
+        onDismiss={vi.fn()}
         health={null}
         error="timeout"
       />

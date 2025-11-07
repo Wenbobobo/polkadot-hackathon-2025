@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { WORBOO_CHAT_MESSAGES } from '../../constants/strings'
 
@@ -45,13 +46,13 @@ const resetAssistantEnv = () => {
 
 describe('useWorbooAssistant', () => {
   beforeEach(() => {
-    jest.resetModules()
+    vi.resetModules()
     resetAssistantEnv()
   })
 
   afterEach(() => {
-    jest.clearAllMocks()
-    jest.restoreAllMocks()
+    vi.clearAllMocks()
+    vi.restoreAllMocks()
     resetAssistantEnv()
     delete (global as any).fetch
   })
@@ -91,7 +92,7 @@ describe('useWorbooAssistant', () => {
       'X-Custom': 'polyglot',
     })
 
-    const fetchMock = jest.fn().mockResolvedValue({
+    const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ message: 'Remote hint for the hidden word.' }),
     })

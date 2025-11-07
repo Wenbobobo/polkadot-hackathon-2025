@@ -1,7 +1,6 @@
 #!/usr/bin/env node
-#!/usr/bin/env node
-const http = require('http')
-const minimist = require('minimist')
+import http from 'http'
+import minimist from 'minimist'
 
 const args = minimist(process.argv.slice(2), {
   string: ['port', 'delay', 'messages', 'cors'],
@@ -19,7 +18,9 @@ const parseMessages = (input) => {
     const parsed = JSON.parse(input)
     if (Array.isArray(parsed) && parsed.length > 0) return parsed
   } catch (error) {
-    console.warn('[mock-assistant] Failed to parse messages JSON, falling back to default.')
+    console.warn(
+      '[mock-assistant] Failed to parse messages JSON, falling back to default.'
+    )
   }
   return [{ message: 'Worboo mock hint: think about Moonbase!' }]
 }
@@ -34,7 +35,10 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Custom')
+    res.setHeader(
+      'Access-Control-Allow-Headers',
+      'Content-Type, Authorization, X-Custom'
+    )
     res.writeHead(204)
     res.end()
     return

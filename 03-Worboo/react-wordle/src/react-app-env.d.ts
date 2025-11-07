@@ -1,13 +1,4 @@
-/// <reference types="node" />
-/// <reference types="react" />
-/// <reference types="react-dom" />
-
-declare namespace NodeJS {
-  interface ProcessEnv {
-    readonly NODE_ENV: 'development' | 'production' | 'test'
-    readonly PUBLIC_URL: string
-  }
-}
+/// <reference types="vite/client" />
 
 declare module '*.avif' {
   const src: string
@@ -58,6 +49,29 @@ declare module '*.svg' {
 declare module '*.module.css' {
   const classes: { readonly [key: string]: string }
   export default classes
+}
+
+interface ImportMetaEnv {
+  readonly REACT_APP_GAME_NAME?: string
+  readonly REACT_APP_GAME_DESCRIPTION?: string
+  readonly REACT_APP_WORBOO_REGISTRY?: string
+  readonly REACT_APP_WORBOO_TOKEN?: string
+  readonly REACT_APP_WORBOO_SHOP?: string
+  readonly REACT_APP_RELAYER_HEALTH_URL?: string
+  readonly REACT_APP_ASSISTANT_ENABLED?: string
+  readonly REACT_APP_ASSISTANT_URL?: string
+  readonly REACT_APP_ASSISTANT_MODEL?: string
+  readonly REACT_APP_ASSISTANT_HEADERS?: string
+  readonly REACT_APP_ASSISTANT_PROMPT_FIRST?: string
+  readonly REACT_APP_ASSISTANT_PROMPT_RETRY?: string
+  readonly REACT_APP_NETWORK_CHAIN_ID?: string
+  readonly REACT_APP_NETWORK_NAME?: string
+  readonly REACT_APP_SHOP_DEMO_MODE?: string
+  readonly REACT_APP_ZK_PROOFS_ENABLED?: string
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv
 }
 
 declare module '*.module.scss' {

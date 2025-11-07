@@ -19,6 +19,8 @@ export type WorbooAppConfig = {
   }
 }
 
+import fileConfigJson from './app-config.json'
+
 const parseBoolean = (value: string | undefined, fallback: boolean) => {
   if (value === undefined) return fallback
   if (value === 'true') return true
@@ -27,6 +29,13 @@ const parseBoolean = (value: string | undefined, fallback: boolean) => {
 }
 
 const env = process.env
+
+type PartialConfig = Partial<WorbooAppConfig>
+type PartialAssistantConfig = Partial<
+  WorbooAppConfig['features']['aiAssistant']
+>
+
+const fileConfig = (fileConfigJson ?? {}) as PartialConfig
 
 const parseHeaders = (value: string | undefined) => {
   if (!value) return {}
@@ -51,27 +60,100 @@ const parseHeaders = (value: string | undefined) => {
   return {}
 }
 
+const mergeHeaders = (
+  base: Record<string, string>,
+  overrides: Record<string, string>
+) => ({
+  ...base,
+  ...overrides,
+})
+
+const resolveBooleanWithFile = (
+  envValue: string | undefined,
+  fileValue: boolean | undefined,
+  fallback: boolean
+) =>
+  parseBoolean(
+    envValue,
+    fileValue !== undefined ? fileValue : fallback
+  )
+
+const resolveString = (
+  envValue: string | undefined,
+  fileValue: string | undefined,
+  fallback: string
+) => {
+  if (envValue !== undefined) return envValue
+  if (fileValue !== undefined) return fileValue
+  return fallback
+}
+
+const fileAssistant: PartialAssistantConfig =
+  fileConfig.features?.aiAssistant ?? {}
+
+const DEFAULT_PROMPT_FIRST =
+  fileAssistant.promptFirstAttempt ??
+  'You are Worboo, a playful teacher helping learners guess the word "{word}". Offer a gentle hint without revealing the answer.'
+const DEFAULT_PROMPT_RETRY =
+  fileAssistant.promptRetry ??
+  'You are Worboo, an encouraging assistant. The correct word is "{word}". Give a firmer hint but keep the experience fun.'
+
 // NOTE: Update this file to customise hackathon builds.
 export const appConfig: WorbooAppConfig = {
   network: {
-    requiredChainId: Number(env.REACT_APP_NETWORK_CHAIN_ID ?? 1287),
-    name: env.REACT_APP_NETWORK_NAME ?? 'Moonbase Alpha',
+    requiredChainId: Number(
+      env.REACT_APP_NETWORK_CHAIN_ID ??
+        fileConfig.network?.requiredChainId ??
+        1287
+    ),
+    name: resolveString(
+      env.REACT_APP_NETWORK_NAME,
+      fileConfig.network?.name,
+      'Moonbase Alpha'
+    ),
   },
   features: {
     // Keep true for hackathon demos where the shop should function without on-chain state.
-    shopDemoMode: parseBoolean(env.REACT_APP_SHOP_DEMO_MODE, true),
-    zkProofsEnabled: parseBoolean(env.REACT_APP_ZK_PROOFS_ENABLED, false),
+    shopDemoMode: resolveBooleanWithFile(
+      env.REACT_APP_SHOP_DEMO_MODE,
+      fileConfig.features?.shopDemoMode,
+      true
+    ),
+    zkProofsEnabled: resolveBooleanWithFile(
+      env.REACT_APP_ZK_PROOFS_ENABLED,
+      fileConfig.features?.zkProofsEnabled,
+      false
+    ),
     aiAssistant: {
-      enabled: parseBoolean(env.REACT_APP_ASSISTANT_ENABLED, false),
-      baseUrl: env.REACT_APP_ASSISTANT_URL ?? '',
-      model: env.REACT_APP_ASSISTANT_MODEL ?? '',
-      promptFirstAttempt:
-        env.REACT_APP_ASSISTANT_PROMPT_FIRST ??
-        'You are Worboo, a playful teacher helping learners guess the word "{word}". Offer a gentle hint without revealing the answer.',
-      promptRetry:
-        env.REACT_APP_ASSISTANT_PROMPT_RETRY ??
-        'You are Worboo, an encouraging assistant. The correct word is "{word}". Give a firmer hint but keep the experience fun.',
-      headers: parseHeaders(env.REACT_APP_ASSISTANT_HEADERS),
+      enabled: resolveBooleanWithFile(
+        env.REACT_APP_ASSISTANT_ENABLED,
+        fileAssistant.enabled,
+        false
+      ),
+      baseUrl: resolveString(
+        env.REACT_APP_ASSISTANT_URL,
+        fileAssistant.baseUrl,
+        ''
+      ),
+      model: resolveString(
+        env.REACT_APP_ASSISTANT_MODEL,
+        fileAssistant.model,
+        ''
+      ),
+      promptFirstAttempt: resolveString(
+        env.REACT_APP_ASSISTANT_PROMPT_FIRST,
+        fileAssistant.promptFirstAttempt,
+        DEFAULT_PROMPT_FIRST
+      ),
+      promptRetry: resolveString(
+        env.REACT_APP_ASSISTANT_PROMPT_RETRY,
+        fileAssistant.promptRetry,
+        DEFAULT_PROMPT_RETRY
+      ),
+      headers: mergeHeaders(
+        fileAssistant.headers ?? {},
+        parseHeaders(env.REACT_APP_ASSISTANT_HEADERS)
+      ),
     },
   },
 }
