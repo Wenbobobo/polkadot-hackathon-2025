@@ -2,9 +2,9 @@ import { EventEmitter } from 'events'
 import { act, render } from '@testing-library/react'
 import React, { useEffect } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import type { Contract } from 'ethers'
+import type { Contract } from 'ethers6'
 
-vi.mock('ethers', () => ({
+vi.mock('ethers6', () => ({
   constants: {
     AddressZero: '0x0000000000000000000000000000000000000000',
   },

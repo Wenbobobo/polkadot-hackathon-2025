@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { utils } from 'ethers'
+import { utils } from 'ethers6'
 
 import { useWorbooContracts } from '../services/contracts'
 import { getOnChainShopItems, getShopItemTokenId } from '../utils/shop'

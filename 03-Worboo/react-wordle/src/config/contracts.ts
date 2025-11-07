@@ -1,4 +1,4 @@
-import { ethers } from 'ethers'
+import { ethers } from 'ethers6'
 
 export type ContractsConfig = {
   registry?: `0x${string}`

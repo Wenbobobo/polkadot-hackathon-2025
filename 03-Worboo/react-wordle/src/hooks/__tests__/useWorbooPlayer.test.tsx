@@ -1,6 +1,6 @@
 import { act, renderHook } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import type { Contract } from 'ethers'
+import type { Contract } from 'ethers6'
 
 const {
   useQueryMock,

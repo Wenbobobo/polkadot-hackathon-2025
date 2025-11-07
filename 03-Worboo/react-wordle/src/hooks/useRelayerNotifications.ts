@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { constants, utils } from 'ethers'
+import { constants, utils } from 'ethers6'
 import { useAccount } from 'wagmi'
 
 import { useWorbooContracts } from '../services/contracts'

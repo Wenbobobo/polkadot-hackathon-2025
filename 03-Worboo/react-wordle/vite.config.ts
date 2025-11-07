@@ -25,6 +25,7 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         '@': path.resolve(__dirname, 'src'),
+        ethers6: path.resolve(__dirname, 'node_modules/ethers6'),
       },
     },
     server: {
