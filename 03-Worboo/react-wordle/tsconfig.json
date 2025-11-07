@@ -19,7 +19,9 @@
     "baseUrl": "./",
     "paths": {
       "@/*": ["src/*"],
-      "ethers6": ["node_modules/ethers6"]
+      "ethers6": ["../node_modules/ethers6"],
+      "ethers": ["node_modules/ethers"],
+      "ethers/lib/utils.js": ["node_modules/ethers/lib/utils.js"]
     }
   },
   "include": ["src"]

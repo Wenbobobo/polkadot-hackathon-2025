@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { constants, utils } from 'ethers6'
+import { ZeroAddress, formatUnits } from 'ethers6'
 import { useAccount } from 'wagmi'
 
 import { useWorbooContracts } from '../services/contracts'
@@ -24,12 +24,9 @@ type UseRelayerNotificationsOptions = {
   onRewardAcknowledged?: () => void
 }
 
-const ZERO_ADDRESS =
-  constants?.AddressZero ?? '0x0000000000000000000000000000000000000000'
-
 const formatAmount = (value: bigint, decimals = 18): string => {
   try {
-    return utils.formatUnits(value, decimals)
+    return formatUnits(value, decimals)
   } catch {
     return value.toString()
   }
@@ -96,7 +93,7 @@ export const useRelayerNotifications = ({
       value: bigint,
       event: { transactionHash: string }
     ) => {
-      if (from !== ZERO_ADDRESS) return
+      if (from !== ZeroAddress) return
       if (to.toLowerCase() !== normalizedAddress) return
 
       clearNextWarningTimer()

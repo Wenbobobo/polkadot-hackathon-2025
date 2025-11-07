@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { utils } from 'ethers6'
+import { formatUnits } from 'ethers6'
 
 import { useWorbooContracts } from '../services/contracts'
 import { getOnChainShopItems, getShopItemTokenId } from '../utils/shop'
@@ -149,7 +149,7 @@ const decimals = decimalsQuery.data ?? 18
 const balanceFormatted = useMemo(
   () => {
     try {
-      return utils.formatUnits(balance, decimals)
+      return formatUnits(balance, decimals)
     } catch {
       return balance.toString()
     }
