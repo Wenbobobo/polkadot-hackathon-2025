@@ -18,13 +18,14 @@
   "description": "",
   "dependencies": {
     "dotenv": "^17.2.3",
-    "ethers": "^6.15.0"
+    "ethers": "^6.15.0",
+    "worboo-monorepo": "file:../.."
   },
   "devDependencies": {
     "@types/node": "^24.9.1",
+    "hardhat": "^2.26.3",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.3",
-    "hardhat": "^2.26.3"
+    "vitest": "^4.0.3"
   }
 }

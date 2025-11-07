@@ -1,0 +1,23 @@
+{
+  "name": "worboo-indexer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "ts-node src/server.ts",
+    "snapshot": "ts-node src/snapshot.ts",
+    "build": "tsc -p tsconfig.json",
+    "lint": "eslint src --ext .ts"
+  },
+  "dependencies": {
+    "ethers6": "npm:ethers@6.13.2",
+    "express": "^4.19.2",
+    "pino": "^8.19.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.16.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  }
+}

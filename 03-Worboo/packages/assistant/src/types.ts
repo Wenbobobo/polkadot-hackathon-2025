@@ -9,6 +9,11 @@ export interface AssistantProxyConfig {
   url: string
   method?: string
   headers?: Record<string, string>
+  secretHeaders?: Array<{
+    env: string
+    header: string
+    prefix?: string
+  }>
   bodyTemplate?: unknown
   responsePath?: ResponsePathSegment[]
   timeoutMs?: number

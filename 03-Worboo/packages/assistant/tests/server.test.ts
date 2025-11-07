@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { AssistantConfig } from '../src/types'
 import { createAssistantServer } from '../src/server'
 
@@ -22,9 +22,16 @@ const listen = (server: ReturnType<typeof createAssistantServer>) =>
     })
   })
 
+const ORIGINAL_ENV = { ...process.env }
+
 describe('assistant server', () => {
   afterEach(() => {
     vi.restoreAllMocks()
+    process.env = { ...ORIGINAL_ENV }
+  })
+
+  afterAll(() => {
+    process.env = ORIGINAL_ENV
   })
 
   it('returns static messages when running in static mode', async () => {
@@ -166,6 +173,49 @@ describe('assistant server', () => {
         }),
       })
     )
+
+    await closeServer(server)
+  })
+
+  it('injects secret headers from environment variables while proxying', async () => {
+    process.env.ASSISTANT_API_KEY = 'super-secret'
+    const fetchImpl = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ message: 'hint' }),
+    })
+
+    const config: AssistantConfig = {
+      server: { host: '127.0.0.1', port: 8788 },
+      assistant: {
+        mode: 'proxy',
+        proxy: {
+          url: 'https://assistant.example/hint',
+          secretHeaders: [
+            {
+              env: 'ASSISTANT_API_KEY',
+              header: 'Authorization',
+              prefix: 'Bearer ',
+            },
+          ],
+        },
+      },
+    }
+
+    const server = createAssistantServer(config, { fetchImpl })
+    const { url } = await listen(server)
+
+    await fetch(`${url}/hint`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ prompt: 'p', model: 'm' }),
+    })
+
+    expect(fetchImpl).toHaveBeenCalledTimes(1)
+    const [, options] = fetchImpl.mock.calls[0] as [RequestInfo | URL, RequestInit]
+    expect(options.headers).toMatchObject({
+      Authorization: 'Bearer super-secret',
+    })
 
     await closeServer(server)
   })

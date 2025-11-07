@@ -5,6 +5,7 @@ import { loadConfig } from './config'
 import type {
   AssistantConfig,
   AssistantMode,
+  AssistantProxyConfig,
   HintRequestBody,
   HintResponse,
   ResponsePathSegment,
@@ -17,6 +18,23 @@ interface AssistantDependencies {
 }
 
 const defaultFetchImpl: FetchImpl = (...args) => fetch(...args)
+
+const resolveSecretHeaders = (
+  specs?: AssistantProxyConfig['secretHeaders']
+) => {
+  if (!specs || !Array.isArray(specs)) {
+    return {}
+  }
+
+  return specs.reduce<Record<string, string>>((acc, spec) => {
+    if (!spec?.env || !spec.header) return acc
+    const value = process.env[spec.env]
+    if (value && value.length > 0) {
+      acc[spec.header] = `${spec.prefix ?? ''}${value}`
+    }
+    return acc
+  }, {})
+}
 
 const jsonResponse = (
   res: ServerResponse,
@@ -149,6 +167,7 @@ const handleProxy = async (
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(proxyConfig.headers ?? {}),
+    ...resolveSecretHeaders(proxyConfig.secretHeaders),
   }
 
   const payload =
