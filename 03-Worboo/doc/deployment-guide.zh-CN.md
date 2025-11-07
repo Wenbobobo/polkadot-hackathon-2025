@@ -152,6 +152,7 @@ Worboo 助手后端为前端提供实时提示，既可返回预置文案，也�
    npm run hint --workspace assistant-service -- --prompt "给我一个 Worboo 提示"
    ```
 6. 健康检查：访问 `curl http://127.0.0.1:8788/healthz` 可查看运行时间、请求次数、fallback 次数等指标（CORS 响应头随配置自动返回）。
+7. 秘钥管理：将 `ASSISTANT_API_KEY=...` 这类敏感信息写入环境变量，并在 `secretHeaders` 中引用，避免 JSON 配置里出现真实密钥。
 
 ---
 

@@ -253,6 +253,7 @@ The assistant service powers hints consumed by the React app. It supports both s
    npm run hint --workspace assistant-service -- --prompt "Preview tomorrow's Worboo word"
    ```
 6. Health metrics: `curl http://127.0.0.1:8788/healthz` to confirm uptime, request counters, and fallback usage (CORS headers follow your config).
+7. Secrets: export env vars (e.g., `ASSISTANT_API_KEY=...`) and reference them via `secretHeaders` in the JSON config so API keys never land in git.
 
 ---
 

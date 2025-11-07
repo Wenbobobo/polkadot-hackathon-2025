@@ -36,6 +36,7 @@ The TypeScript helper (`appConfig.ts`) merges the JSON values with any environme
 - CLI probe: `npm run hint --workspace assistant-service -- --prompt "Explain Moonbase"`
 - Tests: `npm test --workspace assistant-service`
 - Health metrics: GET `http://127.0.0.1:8788/healthz` returns JSON with uptime, request counters, and fallback usage (with CORS headers if enabled).
+- Secrets: define `assistant.proxy.secretHeaders` entries such as `{ "env": "ASSISTANT_API_KEY", "header": "Authorization", "prefix": "Bearer " }` and export the matching env vars before starting the service.
 
 Example production JSON snippet:
 

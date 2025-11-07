@@ -4,6 +4,7 @@
   "workspaces": [
     "packages/assistant",
     "packages/contracts",
+    "packages/indexer",
     "packages/relayer",
     "react-wordle"
   ],
